@@ -109,26 +109,71 @@ class Brand_model extends MY_model
 		}
 		return $result;
 	}
-	
-	function getListBrand(){
-		$data= $this->db->select('id,nama')
-						->from($this->table)
-						->where('is_active',1)
-						->where('is_deleted',0)
-						->get();
-		if($data->num_rows()){
+
+	function getListBrand()
+	{
+		$data = $this->db->select('id,nama')
+			->from($this->table)
+			->where('is_active', 1)
+			->where('is_deleted', 0)
+			->get();
+		if ($data->num_rows()) {
 			$result = array(
 				"status" 	=> TRUE,
 				"message" 	=> SUCCESS_GET_DATA,
 				"data"		=> $data->result()
 			);
-		}else{
+		} else {
 			$result = array(
 				"status" 	=> FALSE,
 				"message" 	=> FAILED_GET_DATA,
 				"data"		=> null
 			);
 		}
+		return $result;
+	}
+
+	function getListBrandSelect()
+	{
+		$offset = $this->input->get('page') != null ? intval($this->input->get('page')) : 0;
+		$limit = $this->input->get('limit') != null ? intval($this->input->get('limit')) : 10;
+		$search = $this->input->get('q') != null ? strval($this->input->get('q')) : '';
+		$id = $this->input->get('id') != null ? strval($this->input->get('id')) : '';
+
+		if ($offset > 0) {
+			$offset -= 1;
+		}
+		$this->db->select('id,nama as text')
+			->from($this->table)
+			->where('IS_DELETED', 0)
+			->where('IS_ACTIVE', 1);
+
+		if (in_array(ID_ROLE_BA, $this->session->userdata("role"))) {
+			$this->db->where_in("id", $this->session->userdata("brand"));
+		}
+
+		if ($this->input->get('q')) {
+			$this->db->like('nama', $search, 'both');
+		}
+		$result['total'] = $this->db->get()->num_rows();
+		$this->db->select('id,nama as text')
+			->from($this->table)
+			->where('IS_DELETED', 0)
+			->where('IS_ACTIVE', 1);
+		if ($this->input->get('q')) {
+			$this->db->like('nama', $search, 'both');
+		}
+
+		if (in_array(ID_ROLE_BA, $this->session->userdata("role"))) {
+			$this->db->where_in("id", $this->session->userdata("brand"));
+		}
+
+		if ($this->input->get('id') == '0' || $this->input->get('id')) {
+			$this->db->where('id', $id);
+		}
+		$this->db->limit($limit, ($offset * $limit));
+		$query = $this->db->get()->result_array();
+		$result = array_merge($result, ['items' => $query]);
 		return $result;
 	}
 }

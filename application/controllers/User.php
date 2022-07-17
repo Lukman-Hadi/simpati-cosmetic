@@ -6,6 +6,7 @@ class User extends CI_Controller
 	public function __construct()
 	{
 		parent::__construct();
+		if(!is_login())redirect(site_url('login'));
 		$this->load->model("User_model", "user");
 		$this->load->model("Role_model", "role");
 	}
@@ -152,7 +153,7 @@ class User extends CI_Controller
 	{
 		$this->output->set_content_type('application/json');
 		$id = $this->input->post('id');
-		$response =  $this->role->delete($id);
+		$response =  $this->user->delete($id);
 		echo json_encode($response);
 	}
 	public function setActiveUser()

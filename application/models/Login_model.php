@@ -56,6 +56,12 @@ class Login_model extends MY_model
 	}
 	function getBrand($userId)
 	{
+		$data = $this->db->select("brand_id")->from("user_brand")->where("user_id",$userId)->get()->result();
+		$brand = [];
+		foreach ($data as $d) {
+			$brand[] = $d->brand_id;
+		}
+		return $brand;
 	}
 	function getRole($userId)
 	{

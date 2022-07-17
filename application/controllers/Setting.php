@@ -6,6 +6,7 @@ class Setting extends CI_Controller
 	public function __construct()
 	{
 		parent::__construct();
+		if(!is_login())redirect(site_url('login'));
 		$this->load->model("Menu_model", "menu");
 	}
 

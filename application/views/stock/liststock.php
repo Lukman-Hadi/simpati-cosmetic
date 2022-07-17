@@ -61,18 +61,17 @@
 					</button> -->
 				</div>
 				<div class="table-responsive py-2 px-4">
-					<table id="table" data-toggle="table" data-toolbar="#toolbar" data-url="getProducts" data-pagination="true" data-search="true" data-click-to-select="false" class="table table-sm" data-side-pagination="server" data-page-list="[10,20,50,all]" data-show-refresh="true" data-show-columns="true" data-show-columns-toggle-all="true">
+					<table id="table" data-toggle="table" data-toolbar="#toolbar" data-url="getListStock" data-pagination="true" data-search="true" data-click-to-select="false" class="table table-sm" data-side-pagination="server" data-page-list="[10,20,50,all]" data-show-refresh="true" data-show-columns="true" data-show-columns-toggle-all="true">
 						<thead class="thead-light text-center">
 							<tr>
 								<!-- <th data-width="2" data-width-unit="%" data-checkbox="true"></th> -->
-								<th data-field="product_name" data-formatter="lowercaseRow" data-width="25" data-width-unit="%" class="proper-case px-1">Nama Barang</th>
-								<th data-field="product_code" class="px-1" data-width="10" data-width-unit="%">Kode Barang</th>
-								<th data-field="brand_name" data-formatter="lowercaseRow" class="px-1" data-width="10" data-width-unit="%">Merek</th>
-								<th data-field="list_variant" data-formatter="lowercaseRow" class="proper-case px-1" data-width="20" data-width-unit="%">Daftar Variant</th>
-								<th data-field="sell_value" data-width="15" data-width-unit="%" class="px-1" data-formatter="sellValueFormatter">Harga Jual</th>
-								<th data-field="limit_reminder" class="p-0" data-align="center">Limit</th>
-								<th data-field="is_active" class="p-0" data-align="center" data-formatter="statusFormatter">Status</th>
-								<th data-field="action" data-width="10" data-width-unit="%" data-formatter="actionFormatter">Action</th>
+								<th data-field="nama" data-width="25" data-width-unit="%" class="proper-case px-1">Nama Barang</th>
+								<th data-field="variant_code" class="px-1" data-width="10" data-width-unit="%">Kode Barang</th>
+								<th data-field="brand_name" class="px-1" data-width="10" data-width-unit="%">Merek</th>
+								<th data-field="buy_price" data-width="15" data-width-unit="%" class="px-1" data-formatter="sellValueFormatter">Harga Beli</th>
+								<th data-field="total_unit" class="p-0" data-align="center" data-formatter="unitFormatter">Jumlah Unit</th>
+								<th data-field="total_stock" class="p-0" data-align="center">Jumlah Total Barang</th>
+								<th data-field="expiry_date" class="p-0" data-align="center">Tanggal Expired</th>
 							</tr>
 						</thead>
 					</table>
@@ -81,27 +80,6 @@
 		</div>
 	</div>
 </div>
-<!-- <div class="modal fade" id="modal-form" tabindex="-1" role="dialog" aria-labelledby="modal-form" aria-hidden="true">
-	<div class="modal-dialog modal- modal-dialog-centered modal-md" role="document">
-		<div class="modal-content">
-			<div class="modal-body p-0">
-				<div class="modal-header">
-					<h5 class="modal-title" id="modalHeader"></h5>
-					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-						<span aria-hidden="true">&times;</span>
-					</button>
-				</div>
-				<div class="card bg-secondary border-0 mb-0">
-					<div class="card-body px-lg-5 py-lg-2">
-						<form id="ff" method="post" enctype="multipart/form-data" class="needs-validation">
-
-						</form>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-</div> -->
 
 <div class="modal fade" id="modalView" tabindex="-1" role="dialog" aria-labelledby="modalView" aria-hidden="true">
 	<div class="modal-dialog modal- modal-dialog-centered modal-lg" role="document">
@@ -155,7 +133,7 @@
 										<th class="p-1">Kode Unit Kemasan</th>
 									</thead>
 									<tbody id="packingUnitTableBody">
-
+										
 									</tbody>
 								</table>
 							</div>
@@ -190,7 +168,7 @@
 	// const modal = $('#modal-form');
 	const modal = $('#modalView');
 	const urlSave = 'saveUser';
-	const urlDelete = 'deleteBarang';
+	const urlDelete = 'deleteUser';
 	const urlActiveNonactive = 'setActiveUser';
 	const urlGetRoleList = 'getRoleList';
 	const urlGetBrandList = '/simpati/master/getBrandList';
@@ -205,10 +183,6 @@
 		fetchList(urlGetRoleList, 'role_id[]', 'cbRole', 'role');
 	});
 
-	function lowercaseRow(val,row){
-		return val.toLowerCase();
-	}
-	
 	modal.on('hidden.bs.modal', function() {
 		$('#modalHeader').text('');
 		$('#productName').text('');
@@ -221,17 +195,26 @@
 	})
 
 	function sellValueFormatter(val, row) {
-		console.log({
-			val,
-			row
-		});
 		let res = '';
 		if (row.sell_method === '%') {
 			res = `${Number(val)}%`;
 		} else {
 			res = uang.format(val);
 		}
-		return `${res} / ${row.packing}`;
+		if(row.stock_id == null) return '-';
+		return `${res} / ${row.Pack[row.Pack.length-1].unit}`;
+	}
+	
+	function unitFormatter(val,row){
+		console.log({val,row})
+		if(row.stock_id == null) return '-';
+		let res = '';
+		row.Pack.forEach(arr => {
+			if(arr.total!=0){
+				res += ` ${arr.total} ${arr.unit}` 
+			}
+		});
+		return res;
 	}
 
 	function viewProduct(id) {
@@ -260,10 +243,10 @@
 		$('#productCode').text(data.productCode);
 		$('#productBrand').text(data.brand);
 		$('#productDesc').text(data.desc);
-		let price = data.sellMethod == '%' ? `${data.sellValue} ${data.sellMethod}` : `${data.sellMethod} ${data.sellValue}`;
+		let price = data.sellMethod == '%'?`${data.sellValue} ${data.sellMethod}`: `${data.sellMethod} ${data.sellValue}`;
 		$('#productPrice').text(price);
 		let htmlPack = '';
-		data.productPack.forEach((pack, i) => {
+		data.productPack.forEach((pack,i) => {
 			htmlPack += `<tr><td>${i+1}</td><td>${pack.unit}</td></tr>`
 		});
 		$('#packingUnitTableBody').html(htmlPack);
@@ -338,8 +321,8 @@
 		<div class="col-12 p-0 text-center">
 		<div class="row d-flex justify-content-center">
 			<a href="#" class="badge badge-pill badge-secondary badge-sm" data-toggle="tooltip" data-placement="top" title="Lihat Detail Barang" onClick="viewProduct(${row.id})"><i class="fa fa-eye"></i></a>
-			<a href="edit/${row.id}" class="badge badge-pill badge-primary badge-sm" data-toggle="tooltip" data-placement="top" title="Edit Barang"><i class="fa fa-edit"></i></a>
-			<a href="#" class="badge badge-pill badge-danger badge-sm" data-toggle="tooltip" data-placement="top" onclick="destroy(${row.id})" title="Hapus Barang"><i class="fa fa-trash"></i></a>
+			<a href="menuControl/${row.id}" class="badge badge-pill badge-primary badge-sm" data-toggle="tooltip" data-placement="top" title="Edit Barang"><i class="fa fa-edit"></i></a>
+			<a href="menuControl/${row.id}" class="badge badge-pill badge-danger badge-sm" data-toggle="tooltip" data-placement="top" title="Hapus Barang"><i class="fa fa-trash"></i></a>
 		</div>
 		</div>
 		`

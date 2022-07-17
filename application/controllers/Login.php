@@ -7,7 +7,7 @@ class Login extends CI_Controller
 	function __construct()
 	{
 		parent::__construct();
-		// if (is_login()) redirect(site_url('home'));
+		if (is_login()) redirect(site_url('/'));
 		$this->load->model('Login_model', 'login_model');
 	}
 
@@ -21,13 +21,26 @@ class Login extends CI_Controller
 		$username = $this->input->post('username');
 		$p = $this->input->post('password');
 		$query = $this->login_model->getLogin($username)->row_array();
+		// bypass remove if production
+		// if ($query['is_active'] == 1) {
+		// 	unset($query['password']);
+		// 	unset($query['is_active']);
+		// 	$role = $this->login_model->getRole($query['id']);
+		// 	$query["role"] = $role;
+		// 	$query["menu"] = $this->login_model->getMenu($query["role"]);
+		// 	$this->session->set_userdata($query);
+		// 	// return redirect('/setting/menu');
+		// 	echo json_encode(array('message' => 'Login Success'));
+		// }
 		if ($query) {
 			if (password_verify($p, $query['password'])) {
 				if ($query['is_active'] == 1) {
 					unset($query['password']);
 					unset($query['is_active']);
 					$role = $this->login_model->getRole($query['id']);
+					$brand = $this->login_model->getBrand($query['id']);
 					$query["role"] = $role;
+					$query["brand"] = $brand;
 					$query["menu"] = $this->login_model->getMenu($query["role"]);
 					$this->session->set_userdata($query);
 					// return redirect('/setting/menu');

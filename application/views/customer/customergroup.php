@@ -1,12 +1,3 @@
-<style>
-	.form-group {
-		margin-bottom: 0.5rem;
-	}
-
-	.input-group-text {
-		padding: 0rem 1rem;
-	}
-</style>
 <div class="header bg-primary pb-6">
 	<div class="container-fluid">
 		<div class="header-body">
@@ -49,16 +40,12 @@
 					</button>
 				</div>
 				<div class="table-responsive py-2 px-4">
-					<table id="table" data-toggle="table" data-toolbar="#toolbar" data-url="getPacking" data-pagination="true" data-search="true" data-click-to-select="false" class="table table-sm" data-side-pagination="server" data-page-list="[10,20,50,all]" data-show-refresh="true" data-show-columns="true" data-show-columns-toggle-all="true">
+					<table id="table" data-toggle="table" data-toolbar="#toolbar" data-url="getCustomerGroup" data-pagination="true" data-search="true" data-click-to-select="false" class="table table-sm" data-side-pagination="server" data-page-list="[10,20,50,all]" data-show-refresh="true" data-show-columns="true" data-show-columns-toggle-all="true">
 						<thead class="thead-light text-center">
 							<tr>
 								<th data-width="2" data-width-unit="%" data-checkbox="true"></th>
-								<th data-field="nama" data-width="10" data-width-unit="%">Nama Satuan Kemasan (untuk display)</th>
-								<th data-field="unit" data-width="10" data-width-unit="%">Kode Unit</th>
-								<th data-field="amount" data-width="10" data-width-unit="%">Jumlah per Satuan Kemasan</th>
-								<!-- <th data-field="parent" data-width="10" data-width-unit="%">Induk Kemasan</th> -->
-								<th data-field="description"data-width-unit="%">Deskripsi</th>
-								<th data-field="summary"data-width-unit="%" data-formatter="summaryFormatter">Ringkasan</th>
+								<th data-field="nama" data-width="30" data-width-unit="%">Nama Grup Customer</th>
+								<th data-field="description" data-width="30" data-width-unit="%">Deskripsi</th>
 								<th data-field="is_active" data-sortable="true" data-width="1" data-width-unit="%" data-formatter="statusFormatter">Status</th>
 								<th data-field="action" data-width="10" data-width-unit="%" data-formatter="actionFormatter">Action</th>
 							</tr>
@@ -85,30 +72,12 @@
 					<div class="card-body px-lg-5 py-lg-2">
 						<form id="ff" method="post" enctype="multipart/form-data" class="needs-validation">
 							<div class="form-group" id="nama">
-								<label>Nama Satuan Kemasan (untuk display)</label>
-								<input type="text" name="nama" class="form-control form-control-sm" placeholder="Nama Satuan">
+								<label>Nama Grup</label>
+								<input type="text" name="nama" class="form-control form-control-sm" placeholder="Nama Merek">
 							</div>
-							<div class="form-group" id="unit">
-								<label>Kode Satuan Kemasan (Unik)</label>
-								<input type="text" name="unit" class="form-control form-control-sm" placeholder="Nama per Satuan">
-							</div>
-							<div class="form-group" id="amount">
-								<label>Jumlah unit per Satuan Kemasan</label>
-								<input type="number" name="amount" class="form-control form-control-sm" placeholder="Jumlah per satuan">
-							</div>
-							<!-- <div class="form-group" id="parent_id">
-								<label>Induk Kemasan</label>
-								<select id="parentId" name="parent_id" class="form-control select2-single">
-									<option></option>
-								</select>
-							</div> -->
 							<div class="form-group" id="description">
-								<label>Dekripsi Merek</label>
+								<label>Dekripsi Grup Customer</label>
 								<textarea name="description" id="taDescription" rows="7" class="form-control" resize="none"></textarea>
-							</div>
-							<div class="form-group">
-								<label>Ringkasan</label>
-								<input type="text" id="summaryText" class="form-control form-control-sm" readonly>
 							</div>
 							<div class="text-center">
 								<button id="btnSubmit" type="submit" class="btn btn-primary my-4">Simpan</button>
@@ -124,56 +93,18 @@
 <script>
 	$(document).ready(function() {
 		hideLoaderScreen();
-		$.fn.select2.defaults.set("theme", "bootstrap");
-		/*
-		selectPacking.select2({
-			ajax: {
-				url: 'getPackingList',
-				dataType: 'json',
-				delay: 350,
-				data: function(params) {
-					return {
-						q: params.term,
-						page: params.page,
-						limit: 10
-					};
-				},
-				processResults: function(data, params) {
-					params.page = params.page || 1;
-					return {
-						results: data.items,
-						pagination: {
-							more: (params.page * 10) < data.total
-						}
-					};
-				},
-				cache: true
-			},
-			placeholder: 'Cari Kemasan',
-			allowClear: true,
-			language: "id"
-			// minimumInputLength: 2,
-		})
-		*/
-	});
-	// const selectPacking = $('#parentId')
+	})
 	const remove = $('#btn_remove');
 	const table = $('#table');
 	const modal = $('#modal-form');
-	const urlSave = 'savePacking';
-	const urlDelete = 'destroyPacking';
-	const urlActiveNonactive = 'setActivePacking';
-	const urlSingleRow = 'getSinglePacking';
+	const urlSave = 'saveCustomerGroup';
+	const urlDelete = 'destroyCustomerGroup';
+	const urlActiveNonactive = 'setActiveCustomerGroup';
+	const urlSingleRow = 'getSingleCustomerGroup';
 
 	modal.on('hidden.bs.modal', function() {
 		$('input[name="id"]').remove();
-		$("input").prop('disabled', false);
-		removeClassValidation();
 	})
-	
-	function summaryFormatter(val,row){
-		return `1 ${row.nama} Berisi ${row.amount} Unit turunan`
-	}
 
 	function editForm(id) {
 		showLoaderScreen();
@@ -189,8 +120,6 @@
 					$(`textarea[name=${key}]`).val(val);
 				}
 				$('#ff').append(`<input type="hidden" name="id" value="${data.id}" id="id_form">`)
-				// setDropdown(data.parent_id, 'getPackingList', selectPacking);
-				$(`input[name="unit"]`).prop('disabled', true);
 				hideLoaderScreen();
 			}
 		})
@@ -202,10 +131,9 @@
 			backdrop: 'static',
 			keyboard: false
 		});
-		let text = isEdit ? 'Edit Kemasan' : 'Input Data Kemasan Baru';
+		let text = isEdit ? 'Edit Grup Customer' : 'Input Data Grup Customer Baru';
 		$('#modalHeader').text(text);
 		$('#ff').trigger("reset");
-		selectPacking.val(null).trigger('change');
 	}
 
 	function actionFormatter(val, row) {
@@ -217,22 +145,5 @@
         </div>
         </div>
 		`
-	}
-
-	function setDropdown(id, url, comp) {
-		$.ajax({
-			type: 'GET',
-			url: `${url}?id=${id}`
-		}).then(function(data) {
-			data = data.items[0];
-			let option = new Option(data.text, data.id, true, true);
-			comp.append(option).trigger('change');
-			comp.trigger({
-				type: 'select2:select',
-				params: {
-					data: data
-				}
-			});
-		});
 	}
 </script>

@@ -1,3 +1,16 @@
+const uang = new Intl.NumberFormat("ID-id", {
+	style: "currency",
+	currency: "IDR",
+});
+
+function rupiahFormatter(val){
+	return uang.format(val);
+}
+
+function totalStockFormatter(val){
+	return String(val)+' Unit';
+}
+
 function destroy(id) {
 	if (id) {
 		Swal.fire({
@@ -83,9 +96,9 @@ function destroyBatch() {
 }
 function statusFormatter(val, row) {
 	if (val == 1) {
-		return `<a href="#" class="badge badge-pill badge-success" onclick="activeNonActive(${row.id}); return false;">Aktif</a>`;
+		return `<a href="#" class="badge badge-pill badge-success badge-sm" onclick="activeNonActive(${row.id}); return false;">Aktif</a>`;
 	} else {
-		return `<a href="#" class="badge badge-pill badge-danger" onclick="activeNonActive(${row.id}); return false;">Non Aktif</a>`;
+		return `<a href="#" class="badge badge-pill badge-danger badge-sm" onclick="activeNonActive(${row.id}); return false;">Non Aktif</a>`;
 	}
 }
 
@@ -116,6 +129,7 @@ function activeNonActive(id) {
 }
 
 $("#ff").on("submit", function (e) {
+	showLoaderScreen();
 	e.preventDefault();
 	const string = $("#ff").serialize();
 	removeClassValidation();
@@ -147,6 +161,7 @@ $("#ff").on("submit", function (e) {
 				}
 			}
 			loadingButton(false);
+			hideLoaderScreen();
 		},
 	});
 });
@@ -165,21 +180,29 @@ function removeClassValidation() {
 	$(".invalid-feedback").remove();
 }
 
-function showLoaderScreen(){
-	$('#loader').fadeIn(500);
+function showLoaderScreen() {
+	$("#loader").fadeIn(500);
 }
 
-function hideLoaderScreen(){
-	$('#loader').fadeOut(500);
+function ajaxCall(url) {
+	return $.ajax({
+		type: "GET",
+		url,
+		beforeSend: showLoaderScreen()
+	});
 }
 
-function loadingButton(isLoading){
-	if(isLoading){
-		$('#btnSubmit').prop('disabled',true);
-		$('#btnSubmit').html('Loading...');
-	}else{
-		$('#btnSubmit').prop('disabled',false);
-		$('#btnSubmit').html('Submit');
+function hideLoaderScreen() {
+	$("#loader").fadeOut(500);
+}
+
+function loadingButton(isLoading) {
+	if (isLoading) {
+		$("#btnSubmit").prop("disabled", true);
+		$("#btnSubmit").html("Loading...");
+	} else {
+		$("#btnSubmit").prop("disabled", false);
+		$("#btnSubmit").html("Submit");
 	}
 }
 

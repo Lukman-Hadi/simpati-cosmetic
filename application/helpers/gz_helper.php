@@ -42,7 +42,7 @@ function buildSubTableTree($parent)
 					<td>" . $parent['nama'] . "</td>
 					<td>
 						<label class='custom-toggle'>
-							<input type='checkbox' class='parent-".$parent['link']."' onClick='".'kasiAkses("'.$parent['link'].'")'."' " . checked_akses($parent['access']) . " name='menus[]' value='" . $parent['id'] . "'>
+							<input type='checkbox' class='parent-" . $parent['link'] . "' onClick='" . 'kasiAkses("' . $parent['link'] . '")' . "' " . checked_akses($parent['access']) . " name='menus[]' value='" . $parent['id'] . "'>
 							<span class='custom-toggle-slider rounded-circle' data-label-off='No' data-label-on='Yes'></span>
 						</label>
 					</td>
@@ -50,13 +50,13 @@ function buildSubTableTree($parent)
 	$children = $parent['children'];
 	foreach ($children as $child) {
 		if (isset($child['children'])) {
-			$result .= buildSubTableTree($child,$parent);
+			$result .= buildSubTableTree($child, $parent);
 		} else {
 			$result .= "<tr>
 							<td>" . $child['nama'] . "</td>
 							<td>
 								<label class='custom-toggle'>
-									<input type='checkbox' class='".$parent['link']."' " . checked_akses($child['access']) . " name='menus[]' value='" . $child['id'] . "' onClick='".'kasiAkses("'.$parent['link'].'")'."'>
+									<input type='checkbox' class='" . $parent['link'] . "' " . checked_akses($child['access']) . " name='menus[]' value='" . $child['id'] . "' onClick='" . 'kasiAkses("' . $parent['link'] . '")' . "'>
 									<span class='custom-toggle-slider rounded-circle' data-label-off='No' data-label-on='Yes'></span>
 								</label>
 							</td>
@@ -70,11 +70,11 @@ function checked_akses($checked)
 	return $checked ? "checked='checked'" : "";
 	// return "checked='checked'";
 }
-function buildMenu($menus=[],$active = [])
+function buildMenu($menus = [], $active = [])
 {
 	// $ci = get_instance();
 	// // $menus = buildTree($ci->menu->getMenus());
-	if(!isset($menus))return '';
+	if (!isset($menus)) return '';
 	$menus = buildTree($menus);
 	$result = '<ul class="navbar-nav">';
 	foreach ($menus as $menu) {
@@ -172,5 +172,96 @@ function menuHasChild($rows, $id)
 		} else {
 			return false;
 		}
+	}
+}
+
+function generateRefNo($type)
+{
+	$ci = get_instance();
+	$ci->load->model("Stock_model", "model");
+	if ($type == "add") {
+		$satu = "TB";
+	} else {
+		$satu = "PY";
+	}
+	$month = date('m');
+	$year = date('Y');
+	$dua = $ci->model->getRef($month, $year);
+	return $satu . '/' . $dua . '/' . $month . '/' . $year;
+}
+
+function generateInvoiceNo()
+{
+	$ci = get_instance();
+	$ci->load->model("Penjualan_model", "model");
+	$satu = "INV";
+	$month = date('m');
+	$year = date('Y');
+	$dua = $ci->model->getRef($month, $year);
+	return $satu . '/' . $dua . '/' . $month . '/' . $year;
+}
+function is_login()
+{
+	$ci = get_instance();
+    if (!$ci->session->userdata('id')) {
+        return false;
+    } else {
+        return true;
+    }
+}
+
+function terbilang($angka)
+{
+	$angka = (float)$angka;
+
+	$bilangan = array(
+		'',
+		'Satu',
+		'Dua',
+		'Tiga',
+		'Empat',
+		'Lima',
+		'Enam',
+		'Tujuh',
+		'Delapan',
+		'Sembilan',
+		'Sepuluh',
+		'Sebelas'
+	);
+
+	if ($angka < 12) {
+		return $bilangan[$angka];
+	} else if ($angka < 20) {
+		return $bilangan[$angka - 10] . ' Belas';
+	} else if ($angka < 100) {
+		$hasil_bagi = (int)($angka / 10);
+		$hasil_mod = $angka % 10;
+		return trim(sprintf('%s Puluh %s', $bilangan[$hasil_bagi], $bilangan[$hasil_mod]));
+	} else if ($angka < 200) {
+		return sprintf('seratus %s', terbilang($angka - 100));
+	} else if ($angka < 1000) {
+		$hasil_bagi = (int)($angka / 100);
+		$hasil_mod = $angka % 100;
+		return trim(sprintf('%s Ratus %s', $bilangan[$hasil_bagi], terbilang($hasil_mod)));
+	} else if ($angka < 2000) {
+		return trim(sprintf('seribu %s', terbilang($angka - 1000)));
+	} else if ($angka < 1000000) {
+		$hasil_bagi = (int)($angka / 1000); // karena hasilnya bisa ratusan jadi langsung digunakan rekursif
+		$hasil_mod = $angka % 1000;
+		return sprintf('%s Ribu %s', terbilang($hasil_bagi), terbilang($hasil_mod));
+	} else if ($angka < 1000000000) {
+		$hasil_bagi = (int)($angka / 1000000);
+		$hasil_mod = $angka % 1000000;
+		return trim(sprintf('%s Juta %s', terbilang($hasil_bagi), terbilang($hasil_mod)));
+	} else if ($angka < 1000000000000) {
+		$hasil_bagi = (int)($angka / 1000000000);
+		$hasil_mod = fmod($angka, 1000000000);
+		return trim(sprintf('%s Milyar %s', terbilang($hasil_bagi), terbilang($hasil_mod)));
+	} else if ($angka < 1000000000000000) {
+		$hasil_bagi = $angka / 1000000000000;
+		$hasil_mod = fmod($angka, 1000000000000);
+		return trim(sprintf('%s Triliun %s', terbilang($hasil_bagi), terbilang($hasil_mod)));
+	} else {
+		return 'Wow...';
 	}
 }

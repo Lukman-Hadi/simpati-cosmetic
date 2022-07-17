@@ -127,5 +127,82 @@ $config = array(
 			'label' => 'Jumlah per kemasan',
 			'rules'	=> 'required|numeric'
 		)
+	),
+	'product_save' => array(
+		array(
+			'field' => 'nama',
+			'label' => 'Nama Barang',
+			'rules' => 'required'
+		),
+		array(
+			'field' => 'product_code',
+			'label' => 'Kode Barang',
+			'rules' => 'required|callback_isProductCodeExist',
+			'errors' => array(
+				'isProductCodeExist' => VALIDATION_USERNAME_IS_EXIST,
+			)
+		),
+		array(
+			'field' => 'limit_primary',
+			'label' => 'Limit Peringatan',
+			'rules' => 'numeric'
+		),
+		array(
+			'field' => 'brand_id',
+			'label' => 'Merek Barang',
+			'rules' => 'required'
+		),
+		array(
+			'field' => 'selling_method_value',
+			'label' => 'Harga / Margin',
+			'rules' => 'required|numeric'
+		),
+		array(
+			'field' => 'packing_id',
+			'label' => 'Unit Kemasan',
+			'rules' => 'callback_packingValidation'
+		)
+	), 'customer' => array(
+		array(
+			'field' => 'nama',
+			'label' => 'Nama',
+			'rules'	=> 'required'
+		),
+		array(
+			'field' => 'description',
+			'label' => 'Description',
+			'rules'	=> 'required'
+		),
+		array(
+			'field' => 'group_id',
+			'label' => 'Customer Group',
+			'rules'	=> 'required'
+		),
+	), 'penjualan' => array(
+		array(
+			'field' => 'customer_id',
+			'label'	=> 'Customer',
+			'rules' => 'required'
+		),
+		array(
+			'field' => 'trans_date',
+			'label'	=> 'Tanggal Transaksi',
+			'rules' => 'required'
+		)
+	), 'savePembelian' => array(
+		array(
+			'field' => 'invoice_no',
+			'label'	=> 'No Faktur',
+			'rules' => 'required'
+		),
+		array(
+			'field' => 'trans_date',
+			'label'	=> 'Tanggal Transaksi',
+			'rules' => 'required'
+		),array(
+			'field' => 'supplier_id',
+			'label'	=> 'Supplier',
+			'rules' => 'required'
+		)
 	)
 );

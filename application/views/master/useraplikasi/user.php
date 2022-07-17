@@ -145,7 +145,7 @@
 	const table = $('#table');
 	const modal = $('#modal-form');
 	const urlSave = 'saveUser';
-	const urlDelete = 'deleteUser';
+	const urlDelete = 'destroyUser';
 	const urlActiveNonactive = 'setActiveUser';
 	const urlGetRoleList = 'getRoleList';
 	const urlGetBrandList = '/simpati/master/getBrandList';

@@ -10,7 +10,7 @@
 	<!-- Favicon -->
 	<link rel="icon" href="<?= base_url() . PATH_ASSETS ?>img/brand/favicon.png" type="image/png">
 	<!-- Fonts -->
-	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700">
+	<!-- <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700"> -->
 	<!-- Icons -->
 	<link rel="stylesheet" href="<?= base_url() . PATH_ASSETS ?>vendor/nucleo/css/nucleo.css" type="text/css">
 	<link rel="stylesheet" href="<?= base_url() . PATH_ASSETS ?>vendor/@fortawesome/fontawesome-free/css/all.min.css" type="text/css">
@@ -31,11 +31,15 @@
 </head>
 
 <body>
-	<div class="" id="loader">
-		<span class="ouro ouro3">
-			<span class="left"><span class="anim"></span></span>
-			<span class="right"><span class="anim"></span></span>
-		</span>
+	<div class="inner">
+		<div class="full-height">
+			<div class="scroll-content" id="loader">
+				<span class="ouro ouro3">
+					<span class="left"><span class="anim"></span></span>
+					<span class="right"><span class="anim"></span></span>
+				</span>
+			</div>
+		</div>
 	</div>
 	<!-- Sidenav -->
 	<?php $this->load->view('template/sidebar'); ?>
@@ -75,7 +79,7 @@
 								<div class="list-group list-group-flush">
 
 								</div>
-								<a href="<?= base_url() . 'approve' ?>" class="dropdown-item text-center text-primary font-weight-bold py-3">Lihat Semua</a>
+								<a href="" class="dropdown-item text-center text-primary font-weight-bold py-3">Lihat Semua</a>
 							</div>
 						</li>
 					</ul>
@@ -84,10 +88,10 @@
 							<a class="nav-link pr-0" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 								<div class="media align-items-center">
 									<span class="avatar avatar-md rounded-circle">
-										<img alt="Image placeholder" height="50" src="<?= base_url() ?>assets/avatars/<?= $this->session->userdata('foto') ? $this->session->userdata('foto') : 'profil.png'; ?>">
+										<img alt="Image placeholder" height="50" src="<?= base_url() ?>assets/avatars/<?= $this->session->userdata('foto') ? $this->session->userdata('foto') : 'avatar2.png'; ?>">
 									</span>
 									<div class="media-body  ml-2  d-none d-lg-block">
-										<span class="mb-0 text-sm  font-weight-bold"><?= $this->session->userdata('nama_user') ? $this->session->userdata('nama_user') : 'test'; ?></span>
+										<span class="mb-0 text-sm  font-weight-bold"><?= $this->session->userdata('nama') ? $this->session->userdata('nama') : 'test'; ?></span>
 									</div>
 								</div>
 							</a>
@@ -95,12 +99,8 @@
 								<div class="dropdown-header noti-title">
 									<h6 class="text-overflow m-0">Welcome!</h6>
 								</div>
-								<a href="#!" class="dropdown-item">
-									<i class="ni ni-single-02"></i>
-									<span>My profile</span>
-								</a>
 								<div class="dropdown-divider"></div>
-								<a href="<?= base_url() ?>home/logout" class="dropdown-item">
+								<a href="<?= base_url() ?>admin/logout" class="dropdown-item">
 									<i class="ni ni-user-run"></i>
 									<span>Logout</span>
 								</a>

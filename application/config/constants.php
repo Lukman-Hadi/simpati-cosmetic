@@ -102,6 +102,7 @@ define('VALIDATION_USERNAME_IS_EXIST', 'Username sudah ada silahkan ganti dengan
 define('VALIDATION_CODE_IS_EXIST', 'Kode sudah ada silahkan ganti dengan yang lain');
 define('VALIDATION_CODE_IS_NOT_SAME', 'Kode tidak sama dengan yang sebelum nya');
 define('VALIDATION_MENU_PARENT_ID','Menu yang anda pilih tidak ada, silahkan refresh halaman ini');
+define('STOCK_NOT_FOUND','Barang Ini Belum Memiliki Stok');
 define('SAVE_SUCCESS', 'Sukses menyimpan data');
 define('SAVE_FAILED', 'Gagal menyimpan data');
 define('DELETE_SUCCESS','Berhasil menghapus data');

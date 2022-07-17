@@ -6,8 +6,10 @@ class Master extends CI_Controller
 	public function __construct()
 	{
 		parent::__construct();
+		if(!is_login())redirect(site_url('login'));
 		$this->load->model("Brand_model", "brand");
 		$this->load->model("Kemasan_model", "kemasan");
+		$this->load->model("Supplier_model", "supplier");
 	}
 
 	public function brand()
@@ -123,6 +125,13 @@ class Master extends CI_Controller
 		echo json_encode($result);
 	}
 
+	public function getBrandListSelect()
+	{
+		$result = $this->brand->getListBrandSelect();
+		$this->output->set_content_type('application/json');
+		echo json_encode($result);
+	}
+
 	public function getPacking()
 	{
 		$this->output->set_content_type('application/json');
@@ -139,13 +148,14 @@ class Master extends CI_Controller
 
 	public function savePacking()
 	{
+		//TODO DELETE COMMENTED LINE
 		$this->output->set_content_type('application/json');
 		$this->output->set_content_type('application/json');
 		$id = $this->input->post("id");
 		$nama = $this->input->post("nama");
 		$unit = $this->input->post("unit");
 		$amount = $this->input->post("amount");
-		$parent_id = $this->input->post("parent_id");
+		// $parent_id = $this->input->post("parent_id");
 		$description = $this->input->post("description");
 
 		if ($id) {
@@ -164,7 +174,7 @@ class Master extends CI_Controller
 					"nama"			=> $nama,
 					"description"	=> $description,
 					"amount"		=> $amount,
-					"parent_id"		=> $parent_id,
+					// "parent_id"		=> $parent_id,
 					"is_deleted"	=> 0
 				);
 			}
@@ -184,7 +194,7 @@ class Master extends CI_Controller
 					"description"	=> $description,
 					"unit"			=> $unit,
 					"amount"		=> $amount,
-					"parent_id"		=> $parent_id,
+					// "parent_id"		=> $parent_id,
 					"is_active"		=> 1,
 					"is_deleted"	=> 0
 				);
@@ -219,11 +229,110 @@ class Master extends CI_Controller
 		$result = $this->kemasan->getById($id);
 		echo json_encode($result);
 	}
-	
-	public function destroyPacking(){
+
+	public function destroyPacking()
+	{
 		$this->output->set_content_type('application/json');
 		$id = $this->input->post('id');
 		$response =  $this->kemasan->delete($id);
 		echo json_encode($response);
+	}
+
+	public function supplier()
+	{
+		$data['title']			= MASTER . 'Supplier';
+		$data['subtitle']		= 'List Supplier ' . APPLICATION_NAME;
+		$data['description']	= TABLE_DESC . ' Supplier pada aplikasi ' . APPLICATION_NAME . MULTI_SELECT_TABLE;
+		$data['css_files'][]	= PATH_ASSETS . 'vendor/bootstrap-table/bootstrap-table.min.css';
+		$data['css_files'][]	= PATH_ASSETS . 'vendor/select2/dist/css/select2.min.css';
+		$data['css_files'][]	= PATH_ASSETS . 'vendor/select2/dist/css/select2-bootstrap.css';
+		$data['js_files'][]		= PATH_ASSETS . 'vendor/bootstrap-table/bootstrap-table.min.js';
+		$data['js_files'][]		= PATH_ASSETS . 'vendor/select2/dist/js/select2.min.js';
+		$data['js_files'][]		= PATH_ASSETS . 'vendor/select2/dist/js/i18n/id.js';
+		$data['js_files'][]		= PATH_ASSETS . 'js/common.js';
+		$this->template->load('template/template', 'master/supplier', $data);
+	}
+
+	public function getSupplier()
+	{
+		$this->output->set_content_type('application/json');
+		$result = $this->supplier->getAll();
+		echo json_encode($result);
+	}
+
+	public function getSingleSupplier()
+	{
+		$this->output->set_content_type('application/json');
+		$id = $this->input->get("id");
+		$result = $this->supplier->getById($id);
+		echo json_encode($result);
+	}
+
+	public function saveSupplier()
+	{
+		$this->output->set_content_type('application/json');
+		if (!$this->form_validation->run("role")) {
+			$errorMessage = $this->form_validation->error_array();
+			$res = array(
+				"status" 	=> FALSE,
+				"message" 	=> VALIDATION_ERROR,
+				"data"		=> $errorMessage
+			);
+			echo json_encode($res);
+			return;
+		} else {
+			$id = $this->input->post("id");
+			$nama = $this->input->post("nama");
+			$description = $this->input->post("description");
+
+			if ($id) {
+				$toSave = array(
+					"id"			=> $id,
+					"nama"			=> $nama,
+					"description"	=> $description,
+					"is_active"		=> 1,
+					"is_deleted"	=> 0
+				);
+			} else {
+				$toSave = array(
+					"nama"			=> $nama,
+					"description"	=> $description,
+					"is_active"		=> 1,
+					"is_deleted"	=> 0
+				);
+			}
+
+			$query = $this->supplier->save($toSave);
+			$response = array();
+			if ($query) {
+				$response =  ["status" => true, "message" => SAVE_SUCCESS];
+			} else {
+				$response =  ["status" => false, "message" => SAVE_FAILED];
+			}
+			echo json_encode($response);
+		}
+	}
+
+	public function destroySupplier()
+	{
+		$this->output->set_content_type('application/json');
+		$id = $this->input->post('id');
+		$response =  $this->supplier->delete($id);
+		echo json_encode($response);
+	}
+
+	public function setActiveSupplier()
+	{
+		$this->output->set_content_type('application/json');
+		$id = $this->input->post('id');
+		$response =  $this->supplier->setActive($id);
+		echo json_encode($response);
+	}
+
+	public function getSupplierListSelect()
+	{
+		$result = $this->supplier->getListSupplierSelect();
+		$this->output->set_content_type('application/json');
+		echo json_encode($result);
 	}
 }
