@@ -16,7 +16,7 @@
 		border-color: #fb6340;
 	}
 
-	#packingUnitTable tr td,
+	#table tr td,
 	#tableVariant tr td {
 		padding: 0.25rem;
 		text-align: left;
@@ -27,6 +27,14 @@
 
 	#chechboxField .invalid-feedback {
 		text-align: center;
+	}
+
+	#mainSection,
+	#tableStockSection {
+		-webkit-transition: all 0.5s ease;
+		-moz-transition: all 0.5s ease;
+		-o-transition: all 0.5s ease;
+		transition: all 0.5s ease;
 	}
 
 	.is-invalid+.select2-container--bootstrap .select2-selection--single,
@@ -65,7 +73,7 @@
 <!-- Page content -->
 <div class="container-fluid mt--6">
 	<div class="row">
-		<div class="col-xl-6 col-lg-12">
+		<div class="col-xl-12 col-lg-12" id="mainSection">
 			<div class="card">
 				<div class="card-header">
 					<div class="row">
@@ -95,6 +103,19 @@
 										<option></option>
 									</select>
 								</div>
+								<div class="form-group">
+									<label>Pilih Item </label>
+									<select id="selectProduct" class="form-control select2-single" form-control-sm>
+										<option></option>
+									</select>
+								</div>
+								<div class="form-group mt-3">
+									<label>Lihat Tabel Stock </label>
+									<label class="custom-toggle custom-toggle-default" style="vertical-align: middle;">
+										<input type="checkbox" id="showTable">
+										<span class="custom-toggle-slider rounded-circle"></span>
+									</label>
+								</div>
 							</div>
 						</div>
 						<div id="variantList" class=" my-2">
@@ -102,9 +123,10 @@
 								<thead class="thead-light">
 									<th style="width: 30%;">Nama Barang</th>
 									<th style="width: 30%;" colspan="2">Jumlah</th>
-									<th style="width: 20%;">Harga</th>
-									<th style="width: 15%;">subtotal</th>
-									<th>action</th>
+									<th style="width: 30%;">Harga</th>
+									<th style="width: 8%;">subtotal</th>
+									<th style="width: 1%;">Exp</th>
+									<th style="width: 1%;" class="px-1">action</th>
 								</thead>
 								<tbody id="variantTableBody">
 
@@ -131,7 +153,7 @@
 				</form>
 			</div>
 		</div>
-		<div class="col-xl-6 col-lg-12">
+		<div class="col-xl-6 col-lg-12 d-none" id="tableStockSection">
 			<div class="card">
 				<div class="card-header">
 					<div class="row">
@@ -143,31 +165,17 @@
 						Silahkan gunakan kolom pilih item dengan mencari berdasarkan nama atau kode item, tabel stok berisi informasi nama harga rekomendasi dan stok tersedia
 					</p>
 				</div>
-				<div class="card-body pb-0">
-					<div class="form-group">
-						<label>Pilih Item </label>
-						<select id="selectProduct" class="form-control select2-single" form-control-sm>
-							<option></option>
-						</select>
-					</div>
-					<div class="form-group mt-3">
-						<label>Tabel Stock </label>
-						<label class="custom-toggle custom-toggle-default" style="vertical-align: middle;">
-							<input type="checkbox" id="showTable">
-							<span class="custom-toggle-slider rounded-circle"></span>
-						</label>
-					</div>
-				</div>
-				<div class="table-responsive py-2 px-4 d-none" id="tableStock">
+				<div class="table-responsive py-2 px-4">
 					<table id="table" data-toggle="table" data-toolbar="#toolbar" data-url="getListStockSell" data-pagination="true" data-search="true" data-click-to-select="false" class="table table-sm" data-side-pagination="server" data-page-list="[5,10,15]" data-show-refresh="true" data-show-columns="true" data-show-columns-toggle-all="true">
 						<thead class="thead-light text-center">
 							<tr>
 								<!-- <th data-width="2" data-width-unit="%" data-checkbox="true"></th> -->
-								<th data-field="action" data-width="5" data-width-unit="%" data-formatter="actionFormatter">Action</th>
-								<th data-field="nama" data-width="1" data-width-unit="%" class="proper-case px-1">Nama Barang</th>
-								<th data-field="price" data-width="25" data-width-unit="%" class="px-1" data-formatter="sellValueFormatter">Harga MSRP</th>
-								<!-- <th data-field="total_stock" class="p-0" data-align="center">Tanggal Expired</th> -->
-								<th class="p-0" data-width="15" data-width-unit="%" data-align="center" data-formatter="unitFormatter">Stock Tersedia</th>
+								<th data-field="action" data-width="1" data-width-unit="%" data-formatter="actionFormatter">Action</th>
+								<th data-field="nama" class="proper-case px-1">Nama Barang</th>
+								<th data-field="price" data-width="15" data-width-unit="%" class="px-1" data-formatter="sellValueFormatter">Harga MSRP</th>
+								<th data-field="price_dist" data-width="15" data-width-unit="%" class="px-1" data-formatter="sellValueFormatter">Harga Apotik</th>
+								<th data-field="expired_date" data-width="5" data-width-unit="%" class="px-1" data-align="center">Tanggal Expired</th>
+								<th class="p-0" data-width="5" data-width-unit="%" data-align="center" data-formatter="unitFormatter">Stock Tersedia</th>
 							</tr>
 						</thead>
 					</table>
@@ -256,9 +264,13 @@
 
 	$(`#showTable`).change(function() {
 		if ($(this).is(':checked')) {
-			$('#tableStock').removeClass('d-none');
+			$('#tableStockSection').removeClass('d-none');
+			$('#mainSection').removeClass();
+			$('#mainSection').addClass('col-xl-6 col-lg-12');
 		} else {
-			$('#tableStock').addClass('d-none');
+			$('#tableStockSection').addClass('d-none');
+			$('#mainSection').removeClass();
+			$('#mainSection').addClass('col-xl-12 col-lg-12');
 		}
 	});
 	selectProduct.on('select2:select', function(e) {
@@ -303,6 +315,7 @@
 								</div>
 							</td>
 							<td><input type="hidden" name="sub_total[]" onchange="calculateGrandTotal()"><span class="subtotal">0</span></td>
+							<td><span>${data.expired_date}</span></td>
 							<td style="text-align: center;"><a href="#" class="badge badge-pill badge-danger badge-sm" data-toggle="tooltip" data-placement="top" title="Hapus Barang" onclick="deleteRow(${data.id})"><i class="fa fa-trash"></i></a></td>
 						</tr>`
 			$('#variantTableBody').append(html);
@@ -325,9 +338,9 @@
 		// }] = data.filter(p => p.id == selected);
 		let amount = 1;
 		for (let index = 0; index < data.length; index++) {
-			if(Number(selected)!==data[index].id){
+			if (Number(selected) !== data[index].id) {
 				amount *= data[index].amount;
-			}else if(Number(selected)===data[index].id){
+			} else if (Number(selected) === data[index].id) {
 				amount *= data[index].amount;
 				break
 			}
@@ -458,21 +471,30 @@
 			processData: false, // Important!
 			contentType: false,
 			success: function(result) {
-				console.log(result);
-				if (result.message == "validationError") {
-					let err = result.data;
-					for (let [key, val] of Object.entries(err)) {
-						addClassValidation(key, val);
-					}
-					$(".form-control").addClass("is-valid");
-				} else if (result.message == "validationStock") {
-					let err = result.data;
-					validationStockError(err);
-				} else if (result.message == "validationStock"){
+				if (result.status) {
 					Toast.fire({
-						type: "error",
+						type: "success",
 						title: result.message,
 					});
+					window.setTimeout(function() {
+						location.reload();
+					}, 1000);
+				} else {
+					if (result.message == "validationError") {
+						let err = result.data;
+						for (let [key, val] of Object.entries(err)) {
+							addClassValidation(key, val);
+						}
+						$(".form-control").addClass("is-valid");
+					} else if (result.message == "validationStock") {
+						let err = result.data;
+						validationStockError(err);
+					} else if (result.message == "validationStock") {
+						Toast.fire({
+							type: "error",
+							title: result.message,
+						});
+					}
 				}
 				hideLoaderScreen();
 			}

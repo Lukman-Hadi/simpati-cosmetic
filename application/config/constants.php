@@ -87,6 +87,7 @@ defined('EXIT__AUTO_MAX')      OR define('EXIT__AUTO_MAX', 125); // highest auto
 define('ID_ROLE_BA','4');
 
 define('MASTER','Master ');
+define('REPORT','Laporan Data ');
 define('LIST_DESC','Daftar ');
 define('ADD_DESC','Tambah ');
 define('ADD_INSTRUCTION','Silahkan lengkapi informasi berikut untuk ');

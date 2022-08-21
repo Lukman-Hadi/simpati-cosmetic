@@ -42,6 +42,10 @@ class Brand_model extends MY_model
 		$result = array_merge($result, ['rows' => $item]);
 		return $result;
 	}
+	
+	function getBrand(){
+		return $this->db->get($this->table)->result_array();
+	}
 
 	function save($data)
 	{

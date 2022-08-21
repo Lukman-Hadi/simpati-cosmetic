@@ -1,12 +1,12 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
-
+use PhpOffice\PhpSpreadsheet\Reader;
 class Stock extends CI_Controller
 {
 	public function __construct()
 	{
 		parent::__construct();
-		if(!is_login())redirect(site_url('login'));
+		if (!is_login()) redirect(site_url('login'));
 		$this->load->model("Stock_model", "stock");
 		$this->load->model("Barang_model", "barang");
 	}
@@ -82,7 +82,7 @@ class Stock extends CI_Controller
 	public function listAdjustmentAddDetail()
 	{
 		$row = $this->stock->getAdjustmentAddDetail($this->uri->segment(3));
-		if(!$row){
+		if (!$row) {
 			return redirect('/');
 		}
 		$data['data'] = $row;
@@ -121,7 +121,7 @@ class Stock extends CI_Controller
 		$result = $this->barang->getListProductVariant();
 		echo json_encode($result);
 	}
-	
+
 	public function getListProductsSell()
 	{
 		$this->output->set_content_type('application/json');
@@ -158,6 +158,102 @@ class Stock extends CI_Controller
 		$this->output->set_content_type('application/json');
 		$result = $this->barang->getAll();
 		echo json_encode($result);
+	}
+
+	public function saveStockFromUpload()
+	{
+		$this->output->set_content_type('application/json');
+		if (!empty($_FILES['file']['name'])) {
+			$extension = pathinfo($_FILES['file']['name'], PATHINFO_EXTENSION);
+			if ($extension == 'csv') {
+				$reader = new Reader\Csv;
+			} else if ($extension == 'xlsx') {
+				$reader = new Reader\Xlsx;
+			} else if ($extension == 'xls') {
+				$reader =  new Reader\Xls;
+			} else {
+				$response =  ["status" => false, "message" => 'file harus Xls / Xlsx'];
+				echo json_encode($response);
+				return;
+			}
+			$spreadsheet = $reader->load($_FILES['file']['tmp_name']);
+			$allDataInSheet = $spreadsheet->getActiveSheet()->toArray(null, true, true, true);
+			$arrayCount = count($allDataInSheet);
+			$flag = 0;
+			$createArray = array('id', 'kode_barang', 'nama_barang', 'merk', 'qty(pcs)', 'harga_beli', 'tanggal_expired');
+			$makeArray = array('id' => 'id', 'kode_barang' => 'kode_barang', 'nama_barang' => 'nama_barang', 'merk' => 'merk', 'qty(pcs)' => 'qty(pcs)', 'harga_beli' => 'harga_beli', 'tanggal_expired' => 'tanggal_expired');
+			$SheetDataKey = array();
+			foreach ($allDataInSheet as $dataInSheet) {
+				foreach ($dataInSheet as $key => $value) {
+					if (in_array(trim($value), $createArray)) {
+						$value = preg_replace('/\s+/', '', $value);
+						$SheetDataKey[trim($value)] = $key;
+					}
+				}
+			}
+			$dataDiff = array_diff_key($makeArray, $SheetDataKey);
+			if (empty($dataDiff)) {
+				$flag = 1;
+			}
+			// match excel sheet column
+			if ($flag == 1) {
+				for ($i = 2; $i <= $arrayCount; $i++) {
+					$idVariant = $SheetDataKey['id'];
+					$kodeVariant = $SheetDataKey['kode_barang'];
+					$namaVariant = $SheetDataKey['nama_barang'];
+					$brand = $SheetDataKey['merk'];
+					$qty = $SheetDataKey['qty(pcs)'];
+					$hargaBeli = $SheetDataKey['harga_beli'];
+					$tanggalExpired = $SheetDataKey['tanggal_expired'];
+
+					$idVariant = filter_var(trim($allDataInSheet[$i][$idVariant]), FILTER_SANITIZE_NUMBER_INT);
+					$kodeVariant = filter_var(trim($allDataInSheet[$i][$kodeVariant]), FILTER_SANITIZE_STRING);
+					$namaVariant = filter_var(trim($allDataInSheet[$i][$namaVariant]), FILTER_SANITIZE_STRING);
+					$brand = filter_var(trim($allDataInSheet[$i][$brand]), FILTER_SANITIZE_STRING);
+					$qty = filter_var(trim($allDataInSheet[$i][$qty]), FILTER_SANITIZE_NUMBER_INT);
+					$hargaBeli = filter_var(trim($allDataInSheet[$i][$hargaBeli]), FILTER_SANITIZE_NUMBER_INT);
+					$tanggalExpired = trim($allDataInSheet[$i][$tanggalExpired]);
+					$fetchData[] = array('id_variant' => $idVariant, 'kode_variant' => $kodeVariant, 'nama_variant' => $namaVariant, 'qty' => $qty, 'harga_beli' => $hargaBeli, 'tanggalExpired' => $tanggalExpired);
+				}
+			}
+			$refNo = $this->input->post("ref_no");
+			$methodId = $this->input->post("method_id");
+			$remarks = $this->input->post("remarks");
+			$type = "Penambahan";
+			$header = array(
+				"ref_no" => $refNo,
+				"method" => $methodId,
+				"type"	=> $type,
+				"remarks"	=> $remarks
+			);
+			$detail = [];
+			$toSave = [];
+			foreach ($fetchData as $key => $value) {
+				$detail[] = array(
+					"product_variant_id" => $value['id_variant'],
+					"packing_id" => 5,
+					"expired_date" => $value['tanggalExpired'],
+					"total_stock" => $value['qty'],
+					"buy_price" => intval(str_replace(",", "", $value['harga_beli'])),
+					"type"	=> "plus"
+				);
+				$toSave[] = array(
+					"product_variant_id" => $value['id_variant'],
+					"total_stock" => $value['qty'] * $this->stock->getAmountByPack(5, $value['id_variant']),
+					"buy_price" => intval(str_replace(",", "", $value['harga_beli'])),
+					"expired_date" => $value['tanggalExpired'] == '' ? '0000-00-00' : date_create_from_format("d/m/Y", $value['tanggalExpired'])->format("Y-m-d"),
+					"type"	=> "plus"
+				);
+			}
+			$query = $this->stock->saveStock($toSave, $header, $detail);
+			$response = array();
+			if ($query) {
+				$response =  ["status" => true, "message" => SAVE_SUCCESS];
+			} else {
+				$response =  ["status" => false, "message" => SAVE_FAILED];
+			}
+			echo json_encode($response);
+		}
 	}
 
 	public function saveStock()
@@ -207,10 +303,14 @@ class Stock extends CI_Controller
 		}
 
 
-		$this->stock->saveStock($toSave, $header, $detail);
-
-		$result = $this->input->post();
-		echo json_encode($toSave);
+		$query = $this->stock->saveStock($toSave, $header, $detail);
+		$response = array();
+		if ($query) {
+			$response =  ["status" => true, "message" => SAVE_SUCCESS];
+		} else {
+			$response =  ["status" => false, "message" => SAVE_FAILED];
+		}
+		echo json_encode($response);
 	}
 
 	public function saveAdjusmentStock()
@@ -265,10 +365,14 @@ class Stock extends CI_Controller
 		}
 
 
-		$this->stock->saveAdjustmentStock($toSave, $header, $detail);
-
-		$result = $this->input->post();
-		echo json_encode($toSave);
+		$query = $this->stock->saveAdjustmentStock($toSave, $header, $detail);
+		$response = array();
+		if ($query) {
+			$response =  ["status" => true, "message" => SAVE_SUCCESS];
+		} else {
+			$response =  ["status" => false, "message" => SAVE_FAILED];
+		}
+		echo json_encode($response);
 	}
 
 	public function getListAdjsutmentAddStock()
@@ -277,6 +381,30 @@ class Stock extends CI_Controller
 		$data =  $this->stock->getAdjustmentStockList();
 		echo json_encode($data);
 		return;
+	}
+
+	public function listAllStock()
+	{
+		$data['title']			= LIST_DESC . ' Stock';
+		$data['subtitle']		= LIST_DESC . ' Stock ' . APPLICATION_NAME;
+		$data['description']	= 'Stock ' . APPLICATION_NAME;
+		$data['css_files'][]	= PATH_ASSETS . 'vendor/bootstrap-table/bootstrap-table.min.css';
+		$data['css_files'][]	= PATH_ASSETS . 'vendor/select2/dist/css/select2.min.css';
+		$data['css_files'][]	= PATH_ASSETS . 'vendor/select2/dist/css/select2-bootstrap.css';
+		$data['js_files'][]		= PATH_ASSETS . 'vendor/bootstrap-table/bootstrap-table.min.js';
+		$data['js_files'][]		= PATH_ASSETS . 'vendor/select2/dist/js/select2.min.js';
+		$data['js_files'][]		= PATH_ASSETS . 'vendor/bootstrap-tagsinput/dist/bootstrap-tagsinput.min.js';
+		$data['js_files'][]		= PATH_ASSETS . 'js/jquery.mask.min.js';
+		$data['js_files'][]		= PATH_ASSETS . 'js/common.js';
+		$data['js_files'][]		= PATH_ASSETS . 'js/validation.js';
+		$this->template->load('template/template', 'stock/listallstock', $data);
+	}
+
+	public function getListAllStock()
+	{
+		$this->output->set_content_type('application/json');
+		$result = $this->stock->getListAllStock();
+		echo json_encode($result);
 	}
 
 	public function saveBarang()

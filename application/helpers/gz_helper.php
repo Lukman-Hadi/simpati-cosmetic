@@ -203,11 +203,48 @@ function generateInvoiceNo()
 function is_login()
 {
 	$ci = get_instance();
-    if (!$ci->session->userdata('id')) {
-        return false;
-    } else {
-        return true;
-    }
+	if (!$ci->session->userdata('id')) {
+		return false;
+	} else {
+		return true;
+	}
+}
+
+function clean($string)
+{
+	$string = str_replace(' ', '-', $string); // Replaces all spaces with hyphens.
+
+	return preg_replace('/[^A-Za-z0-9\-]/', '', $string); // Removes special chars.
+}
+
+function convertTotalToPackUnit($total, $unitString)
+{
+	$units = explode("|", $unitString);
+	$remain = $total;
+	for ($i = 0; $i < count($units); $i++) {
+		$packUnit = explode(".", $units[$i]);
+		$amount[] = $packUnit[0];
+		$unit[] = $packUnit[1];
+	}
+	for ($i = 0; $i < count($units); $i++) {
+		$currentAmountPerUnit = 1;
+		for ($j = $i; $j < count($units); $j++) {
+			$currentAmountPerUnit *= $amount[$j];
+		}
+		if ($remain % $currentAmountPerUnit == $remain) {
+			$currentTotalUnit = 0;
+			$remain = $remain;
+		} else {
+			$tempRemain = $remain % $currentAmountPerUnit;
+			$currentTotalUnit = ($remain - $tempRemain) / $currentAmountPerUnit;
+			$remain = $tempRemain;
+		}
+		$temp[] = ["total" => $currentTotalUnit, "unit" => $unit[$i]];
+		if ($remain == 0) {
+			// break;
+		}
+	}
+	return $temp;
 }
 
 function terbilang($angka)

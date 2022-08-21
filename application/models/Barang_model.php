@@ -21,10 +21,49 @@ class Barang_model extends MY_model
 		$limit = $this->input->get('limit') != null ? intval($this->input->get('limit')) : 20;
 		$sort = $this->input->get('sort') != null ? strval($this->input->get('sort')) : 'CREATED_AT';
 		$order = $this->input->get('order') != null ? strval($this->input->get('order')) : 'DESC';
-		$search = $this->input->get('search') != null ? $this->db->escape_like_str($this->input->get('search')) : '';
+		$search = $this->input->get('search') != null ? $this->input->get('search') : '';
 
-		$sqlCount = "SELECT count(1) AS total FROM PRODUCTS WHERE IS_DELETED = 0";
-		$sql = "SELECT id,product_code,product_name,brand_name,list_variant,IFNULL(PRICE,MARGIN) AS sell_value,sell_method,limit_reminder,is_active, product_smallest_pack as packing
+		$sqlCount = "SELECT count(1) as total
+						FROM(
+							SELECT 
+								P.ID AS ID
+								,P.PRODUCT_CODE AS PRODUCT_CODE
+								,P.NAMA AS PRODUCT_NAME
+								,MB.NAMA AS BRAND_NAME
+								,P.PRICE AS PRICE
+								,P.MARGIN AS MARGIN
+								,P.IS_ACTIVE AS IS_ACTIVE
+								,P.BARCODE AS BARCODE
+								,P.PRICE_DIST AS PRICE_DIST
+								,CASE WHEN (P.PRICE IS NOT NULL) THEN 'RP' ELSE '%' END AS SELL_METHOD 
+								,GROUP_CONCAT(DISTINCT PV.NAMA ORDER BY PV.NAMA ASC SEPARATOR ', ') AS LIST_VARIANT
+								,CASE WHEN (UPPER(PV.NAMA) = P.NAMA) THEN PV.LIMIT_REMINDER ELSE (MIN(PV.LIMIT_REMINDER)) END AS LIMIT_REMINDER
+								,P.CREATED_AT AS CREATED_AT
+								,MP.NAMA AS PRODUCT_SMALLEST_PACK
+							FROM PRODUCT_VARIANT PV
+							JOIN PRODUCTS P 
+								ON P.ID = PV.PRODUCT_ID
+								AND P.IS_ACTIVE = 1
+								AND P.IS_DELETED = 0
+							JOIN MST_BRAND MB 
+								ON MB.ID = P.BRAND_ID
+								AND MB.IS_ACTIVE = 1
+								AND MB.IS_DELETED = 0
+							LEFT JOIN PRODUCT_PACKING_UNIT PPU 
+								ON PPU.PRODUCT_ID = P.ID
+								AND PPU.SORT_ORDER = (SELECT MAX(SORT_ORDER) FROM PRODUCT_PACKING_UNIT PPW WHERE PPW.PRODUCT_ID = P.ID)
+							LEFT JOIN MST_PACKING MP 
+								ON MP.ID = PPU.PACKING_ID
+								AND MP.IS_ACTIVE = 1
+								AND MP.IS_DELETED = 0
+							GROUP BY P.ID
+						) PRODUCTS
+						WHERE UPPER(PRODUCTS.PRODUCT_CODE) LIKE UPPER('%$search%')
+						OR UPPER(PRODUCTS.PRODUCT_NAME) LIKE UPPER('%$search%')
+						OR UPPER(PRODUCTS.BRAND_NAME) LIKE UPPER('%$search%')
+						OR UPPER(PRODUCTS.LIST_VARIANT) LIKE UPPER('%$search%')
+						OR UPPER(PRODUCTS.BARCODE) LIKE UPPER('%$search%')";
+		$sql = "SELECT id,product_code,product_name,brand_name,list_variant,IFNULL(PRICE,MARGIN) AS sell_value,sell_method,price_dist,limit_reminder,is_active, product_smallest_pack as packing
 				FROM(
 					SELECT 
 						P.ID AS ID
@@ -35,6 +74,7 @@ class Barang_model extends MY_model
 						,P.MARGIN AS MARGIN
 						,P.IS_ACTIVE AS IS_ACTIVE
 						,P.BARCODE AS BARCODE
+						,P.PRICE_DIST AS PRICE_DIST
 						,CASE WHEN (P.PRICE IS NOT NULL) THEN 'RP' ELSE '%' END AS SELL_METHOD 
 						,GROUP_CONCAT(DISTINCT PV.NAMA ORDER BY PV.NAMA ASC SEPARATOR ', ') AS LIST_VARIANT
 						,CASE WHEN (UPPER(PV.NAMA) = P.NAMA) THEN PV.LIMIT_REMINDER ELSE (MIN(PV.LIMIT_REMINDER)) END AS LIMIT_REMINDER
@@ -76,7 +116,11 @@ class Barang_model extends MY_model
 	{
 		$this->db->trans_start();
 		$this->insertOrUpdate('PRODUCTS', $productHeader);
-		$productHeaderid = $this->db->insert_id();
+		if (array_key_exists('id', $productHeader)) {
+			$productHeaderid = $productHeader['id'];
+		} else {
+			$productHeaderid = $this->db->insert_id();
+		}
 		for ($i = 0; $i < count($productVariant); $i++) {
 			$productVariant[$i]["product_id"] = $productHeaderid;
 			$productVariant[$i]["user_modified"] = $this->user;
@@ -89,10 +133,43 @@ class Barang_model extends MY_model
 				"sort_order" => $key + 1
 			);
 		}
-		$this->db->insert_batch('PRODUCT_VARIANT', $productVariant);
-		$this->db->insert_batch('PRODUCT_PACKING_UNIT', $packageUnit);
+		if (array_key_exists('id', $productHeader)) {
+			$this->deleteInsertBatchVariant('PRODUCT_VARIANT', $productVariant, $productHeader['id']);
+			$this->deleteInsertBatch('PRODUCT_PACKING_UNIT', $productHeaderid, $packageUnit, 'product_id');
+		} else {
+			$this->db->insert_batch('PRODUCT_VARIANT', $productVariant);
+			$this->db->insert_batch('PRODUCT_PACKING_UNIT', $packageUnit);
+		}
 		$this->db->trans_complete();
 
+		if ($this->db->trans_status() === FALSE) {
+			return false;
+		} else {
+			return true;
+		}
+	}
+
+	function saveFromFile($data)
+	{
+		$this->db->trans_start();
+		foreach ($data as $key => $value) {
+			$this->insertOrUpdate('PRODUCTS', $value['product_header']);
+			$productHeaderid = $this->db->insert_id();
+			$productVariant = $value['product_variant'];
+			for ($i = 0; $i < count($productVariant); $i++) {
+				$productVariant[$i]["product_id"] = $productHeaderid;
+				$productVariant[$i]["user_modified"] = $this->user;
+			}
+			$packageUnit[] = array(
+				"product_id" => $productHeaderid,
+				"packing_id" => 5,
+				"sort_order" => 1
+			);
+			$this->db->insert_batch('PRODUCT_VARIANT', $productVariant);
+			$this->db->insert_batch('PRODUCT_PACKING_UNIT', $packageUnit);
+			unset($packageUnit);
+		}
+		$this->db->trans_complete();
 		if ($this->db->trans_status() === FALSE) {
 			return false;
 		} else {
@@ -256,5 +333,65 @@ class Barang_model extends MY_model
 			$result = ["status" => FALSE, "message" => GENERAL_ERROR];
 		}
 		return $result;
+	}
+
+	function getBarangById($id)
+	{
+		$queryHeader = "SELECT P.id,P.nama as nama,p.product_code, p.barcode, p.brand_id, mb.nama as brand_name, p.margin, p.price, p.description FROM PRODUCTS P JOIN MST_BRAND MB ON MB.ID = P.BRAND_ID WHERE p.ID = ?";
+		$queryPack = "SELECT PACKING_ID,SORT_ORDER, concat(mp.unit,' (',mp.nama,')') as text FROM PRODUCT_PACKING_UNIT PPU
+		join mst_packing mp on mp.id = ppu.packing_id WHERE PRODUCT_ID = ? ORDER BY SORT_ORDER ASC;";
+		$queryVariant = "SELECT 
+							PV.ID as id
+							,PV.PRODUCT_ID as product_id
+							,PV.NAMA as nama
+							,PV.DESCRIPTION as description
+							,PV.LIMIT_REMINDER as limit_reminder
+							,REPLACE(PV.VARIANT_CODE,CONCAT(P.PRODUCT_CODE,'-'),'') AS variant_code 
+						FROM PRODUCT_VARIANT PV 
+							JOIN PRODUCTS P ON P.ID = PV.PRODUCT_ID 
+						WHERE PRODUCT_ID = ? 
+						AND PV.IS_DELETED =0";
+		$header = $this->db->query($queryHeader, [$id])->row_array();
+		$pack = $this->db->query($queryPack, [$id])->result_array();
+		$variant = $this->db->query($queryVariant, [$id])->result_array();
+
+		$header["pack"] = $pack;
+		$header["variant"] = $variant;
+
+		return $header;
+	}
+
+	function exportBarang()
+	{
+		$sql = "SELECT product_code,product_name,brand_name,list_variant,harga,limit_reminder, product_smallest_pack as packing
+					FROM(
+						SELECT P.PRODUCT_CODE AS PRODUCT_CODE
+							,P.NAMA AS PRODUCT_NAME
+							,MB.NAMA AS BRAND_NAME
+							,CASE WHEN (P.PRICE IS NOT NULL) THEN concat('Rp. ',FORMAT(P.PRICE,0)) ELSE concat(p.margin,' %') END AS HARGA
+							,P.BARCODE AS BARCODE
+							,case when pv.nama <> p.nama then GROUP_CONCAT(DISTINCT PV.NAMA ORDER BY PV.NAMA ASC SEPARATOR ', ') else '-' end AS LIST_VARIANT
+							,CASE WHEN (UPPER(PV.NAMA) = P.NAMA) THEN PV.LIMIT_REMINDER ELSE (MIN(PV.LIMIT_REMINDER)) END AS LIMIT_REMINDER
+							,P.CREATED_AT AS CREATED_AT
+							,MP.NAMA AS PRODUCT_SMALLEST_PACK
+						FROM PRODUCT_VARIANT PV
+						JOIN PRODUCTS P 
+							ON P.ID = PV.PRODUCT_ID
+							AND P.IS_ACTIVE = 1
+							AND P.IS_DELETED = 0
+						JOIN MST_BRAND MB 
+							ON MB.ID = P.BRAND_ID
+							AND MB.IS_ACTIVE = 1
+							AND MB.IS_DELETED = 0
+						LEFT JOIN PRODUCT_PACKING_UNIT PPU 
+							ON PPU.PRODUCT_ID = P.ID
+							AND PPU.SORT_ORDER = (SELECT MAX(SORT_ORDER) FROM PRODUCT_PACKING_UNIT PPW WHERE PPW.PRODUCT_ID = P.ID)
+						LEFT JOIN MST_PACKING MP 
+							ON MP.ID = PPU.PACKING_ID
+							AND MP.IS_ACTIVE = 1
+							AND MP.IS_DELETED = 0
+						GROUP BY P.ID
+					) PRODUCTS";
+		return $this->queryObject($sql);
 	}
 }

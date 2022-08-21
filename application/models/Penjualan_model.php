@@ -28,8 +28,9 @@ class Penjualan_model extends MY_model
 		$this->insertOrUpdate("direct_sale_header", $header);
 		$id = $this->db->insert_id();
 		for ($i = 0; $i < count($detail); $i++) {
-			$this->adjustStock($detail[$i]);
+			$this->adjustStockByExpDate($detail[$i]);
 			$detail[$i]["header_id"] = $id;
+			unset($detail[$i]["stock_id"]);
 		}
 		$this->db->insert_batch("direct_sale_detail", $detail);
 		$this->db->trans_complete();
@@ -55,6 +56,22 @@ class Penjualan_model extends MY_model
 			$this->db->delete("product_stocks", ["id" => $currStock->id]);
 		}
 	}
+	
+	function adjustStockByExpDate($value, $qtyTotal = 0)
+	{
+		if ($qtyTotal == 0) $qtyTotal = $value["qty_total"];
+		$currStock = $this->db->select("*")->from("product_stocks")->where("id", $value["stock_id"])->limit(1, 0)->get()->row();
+		if ($currStock->total_stock < $qtyTotal) {
+			$qtyTotal -= $currStock->total_stock;
+			$this->db->delete("product_stocks", ["id" => $currStock->id]);
+			$this->adjustStock($value, $qtyTotal);
+		} else if ($currStock->total_stock > $qtyTotal) {
+			$remain = $currStock->total_stock - $qtyTotal;
+			$this->db->update("product_stocks", ["total_stock" => $remain], ["id" => $currStock->id]);
+		} else if ($currStock->total_stock == $qtyTotal) {
+			$this->db->delete("product_stocks", ["id" => $currStock->id]);
+		}
+	}
 
 	function getRef($month, $year)
 	{
@@ -67,8 +84,8 @@ class Penjualan_model extends MY_model
 	{
 		$offset = $this->input->get('offset') != null ? intval($this->input->get('offset')) : 0;
 		$limit = $this->input->get('limit') != null ? intval($this->input->get('limit')) : 20;
-		$sort = $this->input->get('sort') != null ? strval($this->db->escape($this->input->get('sort'))) : 'DSH.CREATED_AT';
-		$order = $this->input->get('order') != null ? strval($this->db->escape($this->input->get('order'))) : 'DESC';
+		$sort = $this->input->get('sort') != null ? strval($this->input->get('sort')) : 'TRANS_DATE';
+		$order = $this->input->get('order') != null ? strval($this->input->get('order')) : 'DESC';
 		$search = $this->input->get('search') != null ? strval($this->input->get('search')) : '';
 
 		$sqlCount = "SELECT count(1) AS total 

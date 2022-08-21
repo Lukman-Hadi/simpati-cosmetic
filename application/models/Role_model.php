@@ -22,6 +22,7 @@ class Role_model extends MY_model
 		$this->db->select('id');
 		$this->db->from($this->table);
 		$this->db->where("is_deleted", 0);
+		$this->db->where("id <>", 1);
 		if ($this->input->get('search')) {
 			$this->db->like('nama', $search, 'both');
 			$this->db->like('description', $search, 'both');
@@ -31,6 +32,7 @@ class Role_model extends MY_model
 		$this->db->select('id,nama,description,is_active');
 		$this->db->from($this->table);
 		$this->db->where("is_deleted", 0);
+		$this->db->where("id <>", 1);
 		if ($this->input->get('search')) {
 			$this->db->like('nama', $search, 'both');
 			$this->db->like('description', $search, 'both');
@@ -115,6 +117,7 @@ class Role_model extends MY_model
 						->from($this->table)
 						->where('is_active',1)
 						->where('is_deleted',0)
+						->where('id <>',1)
 						->get();
 		if($data->num_rows()){
 			$result = array(

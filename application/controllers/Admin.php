@@ -9,7 +9,14 @@ class Admin extends CI_Controller {
 	}
 	
 	public function index(){
+		$this->load->model('Report_model','report');
         $data['title']  = 'Dashboard';
+		$data['data']['total_jenis_barang'] = $this->report->getTotalJenisBarang();
+		$data['data']['total_stock'] = $this->report->getTotalStock();
+		$data['data']['barang_hampir_habis'] = $this->report->getProdukHampirHabis();
+		$data['data']['barang_kadaluarsa'] = $this->report->getProdukKadalarsa();
+		$data['data']['paling_banyak_terjual'] = $this->report->getProdukTerjualRank();
+		$data['data']['paling_banyak_stock'] = $this->report->getStockTerbanyak();
         $data['css_files'][] = base_url() . 'assets/admin/vendor/bootstrap-table/bootstrap-table.min.css';
         $data['js_files'][] = base_url() . 'assets/admin/vendor/bootstrap-table/bootstrap-table.min.js';
         $data['js_files'][] = base_url() . 'assets/admin/js/dashboard.js';

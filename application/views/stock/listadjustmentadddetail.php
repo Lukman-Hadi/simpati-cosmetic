@@ -169,8 +169,8 @@
 												<td><?= $value->type ?></td>
 												<td><?= $value->total_stock_display_before ?></td>
 												<td><?= "Rp " . number_format($value->buy_price_before, 0) ?></td>
-												<td><?= strtotime($value->expired_date) > 0 ? $value->expired_date_before : "-" ?></td>
-												<td><?= "Rp " . number_format($totalAfter,0) ?></td>
+												<td><?= strtotime($value->expired_date_before) > 0 ? $value->expired_date_before : "-" ?></td>
+												<td><?= "Rp " . number_format($totalBefore,0) ?></td>
 												<?php if ($value->type == "Penghapusan") { ?>
 													<td>-</td>
 													<td>-</td>

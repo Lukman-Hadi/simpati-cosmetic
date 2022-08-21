@@ -51,14 +51,7 @@
 					</p>
 				</div>
 				<div id="toolbar">
-					<a href="<?= base_url('/barang/add') ?>" class="btn btn-md btn-round btn-icon btn-primary">
-						<span class="btn-inner--icon"><i class="fas fa-plus"></i></span>
-						<span class="btn-inner--text">Tambah Baru</span>
-					</a>
-					<!-- <button id="btn_remove" class="btn btn-md btn-danger btn-round btn-icon" data-toggle="tooltip" data-original-title="Hapus Data" onclick="destroyBatch()" disabled>
-						<span class="btn-inner--icon"><i class="fas fa-trash"></i></span>
-						<span class="btn-inner--text">Hapus</span>
-					</button> -->
+					
 				</div>
 				<div class="table-responsive py-2 px-4">
 					<table id="table" data-toggle="table" data-toolbar="#toolbar" data-url="getListStock" data-pagination="true" data-search="true" data-click-to-select="false" class="table table-sm" data-side-pagination="server" data-page-list="[10,20,50,all]" data-show-refresh="true" data-show-columns="true" data-show-columns-toggle-all="true">

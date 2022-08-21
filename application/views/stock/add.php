@@ -43,8 +43,8 @@
 				<div class="col-lg-6 col-7">
 					<h6 class="h2 text-white d-inline-block mb-0"><?= $title ?></h6>
 				</div>
-				<div class="col-lg-6 col-5 col-md-12 text-right">
-					<!-- reserve -->
+				<div class="col-lg-6 col-5 col-md-12 text-right d-none" id="btnDownloadTemplate">
+					<a href="<?= base_url('export/templateAddStock') ?>" role="button" class="btn btn-secondary">Download Template Stock</a>
 				</div>
 			</div>
 		</div>
@@ -76,12 +76,16 @@
 								</div>
 								<div class="form-group" id="method_id">
 									<label>Metode Penyesuaian <span class="mandatory">*</span></label>
-									<select name="method_id" class="form-control form-control-sm">
-										<!-- <option>Upload File</option> -->
-										<option value="Aplikasi">Via Aplikasi</option>
+									<select name="method_id" id="selectMethod" class="form-control form-control-sm">
+										<option value="upload">Upload File</option>
+										<option value="Aplikasi" selected>Via Aplikasi</option>
 									</select>
 								</div>
-								<div class="form-group">
+								<div class="form-group d-none" id="upload_file">
+									<label>Upload File <span class="mandatory">*</span></label>
+									<input type="file" name="file" class="form-control" placeholder="cth: la tulipe lipstick" disabled>
+								</div>
+								<div class="form-group" id="select_product">
 									<label>Pilih Barang <span class="mandatory">*</span></label>
 									<select id="selectProduct" class="form-control select2-single" form-control-sm>
 										<option></option>
@@ -125,9 +129,10 @@
 </div>
 
 <script>
-	const selectProduct = $('#selectProduct')
+	const selectProduct = $('#selectProduct');
+	const selectMethod = $('#selectMethod');
 	const getProductUrl = <?= json_encode(base_url('stock/getListProducts')) ?>;
-	const saveUrl = <?= json_encode(base_url('stock/saveStock')) ?>;
+	let saveUrl = <?= json_encode(base_url('stock/saveStock')) ?>;
 	const testUrl = <?= json_encode(base_url('stock/getExpiryDate')) ?>;
 	const form = $('#form');
 	$(document).ready(function() {
@@ -175,20 +180,41 @@
 		let data = e.params.data;
 		appendVariantRow(data);
 	});
+	selectMethod.on('change', function(e) {
+		let optionSelected = $("option:selected", this);
+		let valueSelected = this.value;
+		if (valueSelected === 'upload') {
+			$('#upload_file').removeClass('d-none');
+			$('#btnDownloadTemplate').removeClass('d-none');
+			$('#upload_file input').prop('disabled',false);
+			$('#select_product').addClass('d-none');
+			$('#variantList').addClass('d-none');
+			$('#select_product').prop('disabled',true);
+			$('#variantList input').prop('disabled',true);
+			saveUrl = <?= json_encode(base_url('stock/saveStockFromUpload')) ?>;
+		} else if (valueSelected === 'Aplikasi') {
+			$('#upload_file').addClass('d-none');
+			$('#btnDownloadTemplate').addClass('d-none');
+			$('#upload_file input').prop('disabled',true);
+			$('#select_product').removeClass('d-none');
+			$('#variantList').removeClass('d-none');
+			$('#select_product').prop('disabled',false);
+			$('#variantList input').prop('disabled',false);
+			saveUrl = <?= json_encode(base_url('stock/saveStock')) ?>;
+		}
+	})
 
 	function appendVariantRow(data) {
 		selectProduct.val(null).trigger('change');
 		selectProduct.select2('close');
-		console.log(data);
+		let idRow = data.id;
 		if ($(`#variantRow${data.id}`).length) {
-			let element = $(`#variantRow${data.id} input[name="amount[]"]`);
-			let num = parseInt(element.val(), 10);
-			element.val(num + 1);
-		} else {
-			let option = data.packing_units.map(e => {
-				return `<option value="${e.id}">${e.text}</option>`
-			})
-			let html = `<tr id="variantRow${data.id}">
+			idRow = data.id + 'd' + Math.floor(Math.random() * 10000);
+		}
+		let option = data.packing_units.map(e => {
+			return `<option value="${e.id}">${e.text}</option>`
+		})
+		let html = `<tr id="variantRow${idRow}">
 							<td>
 								<input type="text" class="form-control form-control-sm" value="${data.product}" disabled>
 								<input name="variant_id[]" type="hidden" class="form-control form-control-sm" value="${data.id}" readonly>
@@ -204,14 +230,13 @@
 									<input type="text" name="buy_price[]" class="form-control form-control-sm price">
 								</div>
 							</td>
-							<td id="expiry_input${data.id}"><input type="date" name="expiry_date[]" class="form-control form-control-sm"><input type="hidden" name="stockId[]"></td>
-							<td><a href="#" class="badge badge-pill badge-danger badge-sm" data-toggle="tooltip" data-placement="top" title="Hapus Barang" onclick="deleteRow(${data.id})"><i class="fa fa-trash"></i></a></td>
+							<td id="expiry_input${idRow}"><input type="date" name="expiry_date[]" class="form-control form-control-sm"><input type="hidden" name="stockId[]"></td>
+							<td><a href="#" class="badge badge-pill badge-danger badge-sm" data-toggle="tooltip" data-placement="top" title="Hapus Barang" onclick="deleteRow('${idRow}')"><i class="fa fa-trash"></i></a></td>
 						</tr>`
-			$('#variantTableBody').append(html);
-			$('.price').mask('000,000,000,000,000', {
-				reverse: true
-			});
-		}
+		$('#variantTableBody').append(html);
+		$('.price').mask('000,000,000,000,000', {
+			reverse: true
+		});
 	}
 
 	function deleteRow(id) {
@@ -249,6 +274,7 @@
 	form.on('submit', function(e) {
 		e.preventDefault();
 		removeClassValidation();
+		showLoaderScreen();
 		let formData = new FormData(this);
 		$.ajax({
 			url: saveUrl,
@@ -258,18 +284,29 @@
 			processData: false, // Important!
 			contentType: false,
 			success: function(result) {
-				console.log(result);
-				if (result.message == "validationError") {
-					let err = result.data;
-					for (let [key, val] of Object.entries(err)) {
-						addClassValidation(key, val);
-					}
-					$(".form-control").addClass("is-valid");
-				} else {
+				hideLoaderScreen();
+				if (result.status) {
 					Toast.fire({
-						type: "error",
+						type: "success",
 						title: "" + result.message + ".",
 					});
+					hideLoaderScreen();
+					window.setTimeout(function() {
+						window.location.href = "<?= base_url('/stock/liststock') ?>";
+					}, 1000);
+				} else {
+					if (result.message == "validationError") {
+						let err = result.data;
+						for (let [key, val] of Object.entries(err)) {
+							addClassValidation(key, val);
+						}
+						$(".form-control").addClass("is-valid");
+					} else {
+						Toast.fire({
+							type: "error",
+							title: "" + result.message + ".",
+						});
+					}
 				}
 			}
 		})

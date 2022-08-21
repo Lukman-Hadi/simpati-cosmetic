@@ -211,15 +211,14 @@
 	function appendVariantRow(data) {
 		selectProduct.val(null).trigger('change');
 		selectProduct.select2('close');
+		let idRow = data.id;
 		if ($(`#variantRow${data.id}`).length) {
-			let element = $(`#variantRow${data.id} input[name="amount[]"]`);
-			let num = parseInt(element.val(), 10);
-			element.val(num + 1);
-		} else {
-			let option = data.packing_units.map(e => {
-				return `<option value="${e.id}">${e.text}</option>`
-			})
-			let html = `<tr id="variantRow${data.id}">
+			idRow = data.id + 'd' + Math.floor(Math.random() * 10000);
+		}
+		let option = data.packing_units.map(e => {
+			return `<option value="${e.id}">${e.text}</option>`
+		})
+		let html = `<tr id="variantRow${idRow}">
 							<td>
 								<input name="variant_name[]" type="text" class="form-control form-control-sm" value="${data.product}" readonly>
 								<input name="variant_id[]" type="hidden" class="form-control form-control-sm" value="${data.id}" readonly>
@@ -235,14 +234,13 @@
 									<input type="text" name="buy_price[]" class="form-control form-control-sm price">
 								</div>
 							</td>
-							<td id="expiry_input${data.id}"><input type="date" name="expiry_date[]" class="form-control form-control-sm"><input type="hidden" name="stockId[]"></td>
-							<td><a href="#" class="badge badge-pill badge-danger badge-sm" data-toggle="tooltip" data-placement="top" title="Hapus Barang" onclick="deleteRow(${data.id})"><i class="fa fa-trash"></i></a></td>
+							<td id="expiry_input${idRow}"><input type="date" name="expiry_date[]" class="form-control form-control-sm"><input type="hidden" name="stockId[]"></td>
+							<td><a href="#" class="badge badge-pill badge-danger badge-sm" data-toggle="tooltip" data-placement="top" title="Hapus Barang" onclick="deleteRow(${idRow})"><i class="fa fa-trash"></i></a></td>
 						</tr>`
-			$('#variantTableBody').append(html);
-			$('.price').mask('000,000,000,000,000', {
-				reverse: true
-			});
-		}
+		$('#variantTableBody').append(html);
+		$('.price').mask('000,000,000,000,000', {
+			reverse: true
+		});
 	}
 
 	function deleteRow(id) {
@@ -289,18 +287,24 @@
 			processData: false, // Important!
 			contentType: false,
 			success: function(result) {
-				console.log(result);
-				if (result.message == "validationError") {
-					let err = result.data;
-					for (let [key, val] of Object.entries(err)) {
-						addClassValidation(key, val);
-					}
-					$(".form-control").addClass("is-valid");
+				if (result.status) {
+					hideLoaderScreen();
+					window.setTimeout(function() {
+						window.location.href = "<?= base_url('/pembelian/listpembelian') ?>";
+					}, 1000);
 				} else {
-					Toast.fire({
-						type: "error",
-						title: "" + result.message + ".",
-					});
+					if (result.message == "validationError") {
+						let err = result.data;
+						for (let [key, val] of Object.entries(err)) {
+							addClassValidation(key, val);
+						}
+						$(".form-control").addClass("is-valid");
+					} else {
+						Toast.fire({
+							type: "error",
+							title: "" + result.message + ".",
+						});
+					}
 				}
 			}
 		})

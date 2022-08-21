@@ -88,13 +88,13 @@
 										<option></option>
 									</select>
 								</div>
-								<div class="form-group">
+								<!-- <div class="form-group">
 									<label>Gambar Barang</label>
 									<div class="custom-file">
 										<input type="file" name="image" class="custom-file-input" id="customFileLang" lang="id">
 										<label class="custom-file-label" for="customFileLang">Pilih Gambar</label>
 									</div>
-								</div>
+								</div> -->
 								<div class="form-group" id="limit_primary">
 									<label>Limit Peringatan</label>
 									<input type="text" name="limit_primary" class="form-control form-control-sm" placeholder="cth: ltpelip">
@@ -368,7 +368,7 @@
 
 	function addVariantRow(variant) {
 		let html = `
-			<tr id="tr_${variant}">
+			<tr id="tr_${variant.replace(/[^a-zA-Z0-9]/g, '')}">
 				<td><input type="text" name="variant_code[]" class="form-control form-control-sm no-space-key" onkeydown="return event.keyCode!=32"></td>
 				<td><input type="text" name="variant_name[]" class="form-control form-control-sm" value="${variant}" readonly></td>
 				<td><input type="text" name="variant_description[]" class="form-control form-control-sm"></td>
@@ -379,7 +379,7 @@
 	}
 
 	function removeVariantRow(variant) {
-		$(`#tr_${variant}`).remove();
+		$(`#tr_${variant.replace(/[^a-zA-Z0-9]/g, '')}`).remove();
 	}
 
 	sellingMethod.change(function() {
@@ -426,6 +426,7 @@
 	form.on('submit', function(e) {
 		e.preventDefault();
 		removeClassValidation();
+		showLoaderScreen();
 		let formData = new FormData(this);
 		$.ajax({
 			url: urlSave,
@@ -436,18 +437,30 @@
 			contentType: false,
 			success: function(result) {
 				console.log(result);
-				if (result.message == "validationError") {
-					let err = result.data;
-					for (let [key, val] of Object.entries(err)) {
-						addClassValidation(key, val);
-					}
-					$(".form-control").addClass("is-valid");
-				} else {
+				if (result.status) {
 					Toast.fire({
-						type: "error",
+						type: "success",
 						title: "" + result.message + ".",
 					});
+					hideLoaderScreen();
+					window.setTimeout(function() {
+						window.location.href = "<?= base_url('/barang/listbarang') ?>";
+					}, 1000);
+				} else {
+					if (result.message == "validationError") {
+						let err = result.data;
+						for (let [key, val] of Object.entries(err)) {
+							addClassValidation(key, val);
+						}
+						$(".form-control").addClass("is-valid");
+					} else {
+						Toast.fire({
+							type: "error",
+							title: "" + result.message + ".",
+						});
+					}
 				}
+				hideLoaderScreen();
 			}
 		})
 	})

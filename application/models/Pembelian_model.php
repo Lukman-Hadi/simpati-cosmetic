@@ -67,7 +67,7 @@ class Pembelian_model extends MY_model
 					,P.remarks as remarks
 					, SUM((PD.TOTAL_QTY * PD.BUY_PRICE)) as grand_total 
 				FROM PEMBELIAN P
-				LEFT JOIN PEMBELIAN_DETAIL PD 
+				JOIN PEMBELIAN_DETAIL PD 
 					ON PD.HEADER_ID = P.ID
 				LEFT JOIN MST_SUPPLIER MS 
 					ON P.SUPPLIER_ID = MS.ID 
@@ -77,6 +77,7 @@ class Pembelian_model extends MY_model
 					UPPER(MS.NAMA) LIKE UPPER('%$search%') OR
 					UPPER(P.USER_MODIFIED) LIKE UPPER('%$search%')
 				)
+				GROUP BY P.ID
 				ORDER BY $sort $order
 				LIMIT $limit OFFSET $offset";
 		$count = $this->querySingle($sqlCount);

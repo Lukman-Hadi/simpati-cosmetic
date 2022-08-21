@@ -65,7 +65,7 @@
 								<th data-field="type" class="px-1" data-width="10" data-width-unit="%">Tipe Penyesuaian</th>
 								<th data-field="total_stock" class="px-1" data-formatter="totalStockFormatter" data-width="10" data-width-unit="%">Total Barang</th>
 								<th data-field="total_price" class="px-1" data-formatter="rupiahFormatter" data-width="10" data-width-unit="%">Total Nominal Barang</th>
-								<th data-field="created_at" class="px-1" data-width="10" data-width-unit="%">Tanggal</th>
+								<th data-field="created_at" data-sortable="true" class="px-1" data-width="10" data-width-unit="%">Tanggal</th>
 								<th data-field="user_modified" data-width="15" data-width-unit="%" class="px-1">User</th>
 								<th data-field="action" data-width="10" data-width-unit="%" data-formatter="actionFormatter">Action</th>
 							</tr>
@@ -99,7 +99,6 @@
 		<div class="col-12 p-0 text-center">
 		<div class="row d-flex justify-content-center">
 			<a href="listAdjustmentAddDetail/${row.id}" class="badge badge-pill badge-secondary badge-sm" data-toggle="tooltip" data-placement="top" title="Lihat Detail"><i class="fa fa-eye"></i></a>
-			<a href="listAdjustmentAddDetail/${row.id}" class="badge badge-pill badge-danger badge-sm" data-toggle="tooltip" data-placement="top" title="Hapus Barang"><i class="fa fa-trash"></i></a>
 		</div>
 		</div>
 		`

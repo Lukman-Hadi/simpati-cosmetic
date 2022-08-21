@@ -139,7 +139,7 @@ $config = array(
 			'label' => 'Kode Barang',
 			'rules' => 'required|callback_isProductCodeExist',
 			'errors' => array(
-				'isProductCodeExist' => VALIDATION_USERNAME_IS_EXIST,
+				'isProductCodeExist' => VALIDATION_CODE_IS_EXIST,
 			)
 		),
 		array(
@@ -199,10 +199,36 @@ $config = array(
 			'field' => 'trans_date',
 			'label'	=> 'Tanggal Transaksi',
 			'rules' => 'required'
-		),array(
+		), array(
 			'field' => 'supplier_id',
 			'label'	=> 'Supplier',
 			'rules' => 'required'
 		)
-	)
+	), 'product_update' => array(
+		array(
+			'field' => 'nama',
+			'label' => 'Nama Barang',
+			'rules' => 'required'
+		),
+		array(
+			'field' => 'limit_primary',
+			'label' => 'Limit Peringatan',
+			'rules' => 'numeric'
+		),
+		array(
+			'field' => 'brand_id',
+			'label' => 'Merek Barang',
+			'rules' => 'required'
+		),
+		array(
+			'field' => 'selling_method_value',
+			'label' => 'Harga / Margin',
+			'rules' => 'required|numeric'
+		),
+		array(
+			'field' => 'packing_id',
+			'label' => 'Unit Kemasan',
+			'rules' => 'callback_packingValidation'
+		)
+	),
 );

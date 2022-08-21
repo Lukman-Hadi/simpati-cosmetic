@@ -63,7 +63,7 @@
 								<th data-field="invoice_no" data-width="10" data-width-unit="%" class="proper-case px-1">No Inv</th>
 								<th data-field="customer" class="px-1" data-width="10" data-width-unit="%">Customer</th>
 								<th data-field="grand_total" class="px-1" data-formatter="rupiahFormatter" data-width="10" data-width-unit="%">Total Penjualan</th>
-								<th data-field="trans_date" class="px-1" data-width="10" data-width-unit="%">Tanggal Transaksi</th>
+								<th data-field="trans_date" data-sortable="true" class="px-1" data-width="10" data-width-unit="%">Tanggal Transaksi</th>
 								<th data-field="user_modified" data-width="15" data-width-unit="%" class="px-1">User</th>
 								<th data-field="remarks" data-width="15" data-width-unit="%" class="px-1">Notes</th>
 								<th data-field="action" data-width="10" data-width-unit="%" data-formatter="actionFormatter">Action</th>

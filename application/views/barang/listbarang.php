@@ -67,9 +67,10 @@
 								<!-- <th data-width="2" data-width-unit="%" data-checkbox="true"></th> -->
 								<th data-field="product_name" data-formatter="lowercaseRow" data-width="25" data-width-unit="%" class="proper-case px-1">Nama Barang</th>
 								<th data-field="product_code" class="px-1" data-width="10" data-width-unit="%">Kode Barang</th>
-								<th data-field="brand_name" data-formatter="lowercaseRow" class="px-1" data-width="10" data-width-unit="%">Merek</th>
+								<th data-field="brand_name" data-sortable="true" data-formatter="lowercaseRow" class="px-1" data-width="10" data-width-unit="%">Merek</th>
 								<th data-field="list_variant" data-formatter="lowercaseRow" class="proper-case px-1" data-width="20" data-width-unit="%">Daftar Variant</th>
-								<th data-field="sell_value" data-width="15" data-width-unit="%" class="px-1" data-formatter="sellValueFormatter">Harga Jual</th>
+								<th data-field="sell_value" data-width="10" data-width-unit="%" class="px-1" data-formatter="sellValueFormatter">Harga Jual</th>
+								<th data-field="price_dist" data-width="10" data-width-unit="%" class="px-1" data-formatter="sellDistFormatter">Harga Jual Apotik</th>
 								<th data-field="limit_reminder" class="p-0" data-align="center">Limit</th>
 								<th data-field="is_active" class="p-0" data-align="center" data-formatter="statusFormatter">Status</th>
 								<th data-field="action" data-width="10" data-width-unit="%" data-formatter="actionFormatter">Action</th>
@@ -231,6 +232,12 @@
 		} else {
 			res = uang.format(val);
 		}
+		return `${res} / ${row.packing}`;
+	}
+	
+	function sellDistFormatter(val, row) {
+		console.log(val)
+		res = uang.format(val);
 		return `${res} / ${row.packing}`;
 	}
 

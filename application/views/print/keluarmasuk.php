@@ -78,3 +78,8 @@
 		<?php } ?>
 	</tbody>
 </table>
+<script>
+	$(document).ready(function(){
+		window.print();
+	})
+</script>

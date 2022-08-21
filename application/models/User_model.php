@@ -21,7 +21,15 @@ class User_model extends MY_model
 		$order = $this->input->get('order') != null ? strval($this->input->get('order')) : 'DESC';
 		$search = $this->input->get('search') != null ? strval($this->input->get('search')) : '';
 
-		$sqlCount = "SELECT count(1) AS total FROM MST_USERS WHERE IS_DELETED = 0";
+		$sqlCount = "SELECT count(1) AS total FROM MST_USERS MU 
+					JOIN user_role ur
+						ON ur.user_id = mu.id
+					JOIN mst_role mr
+						ON mr.id = ur.role_id
+						AND mr.is_active = 1
+						AND mr.is_deleted = 0
+						AND mr.id <> 1 
+					WHERE mu.IS_DELETED = 0";
 		$sql = "SELECT
 					id,
 					nama,
@@ -46,6 +54,7 @@ class User_model extends MY_model
 						ON mr.id = ur.role_id
 						AND mr.is_active = 1
 						AND mr.is_deleted = 0
+						AND mr.id <> 1
 					LEFT JOIN user_brand ub
 						ON ub.user_id = mu.id
 					LEFT JOIN mst_brand mb
@@ -93,8 +102,8 @@ class User_model extends MY_model
 				);
 			}
 			$this->deleteInsertBatch($this->tableUserBrand, $id, $brandData);
-		}else{
-			$this->db->delete($this->tableUserBrand,["user_id"=>$id]);
+		} else {
+			$this->db->delete($this->tableUserBrand, ["user_id" => $id]);
 		}
 		if ($this->db->trans_status() === FALSE) {
 			$this->db->trans_rollback();
@@ -126,19 +135,19 @@ class User_model extends MY_model
 			return $result;
 		}
 		$user = $this->db->select("id,nama,username")
-						 ->from($this->table)
-						 ->where("id",$id)
-						 ->get();
+			->from($this->table)
+			->where("id", $id)
+			->get();
 		if ($user->num_rows() == 1) {
 			$data = $user->row_array();
 			$role = $this->db->select("role_id")
-							 ->from($this->tableUserRole)
-							 ->where("user_id",$id)
-							 ->get();
+				->from($this->tableUserRole)
+				->where("user_id", $id)
+				->get();
 			$brand = $this->db->select("brand_id")
-							 ->from($this->tableUserBrand)
-							 ->where("user_id",$id)
-							 ->get();
+				->from($this->tableUserBrand)
+				->where("user_id", $id)
+				->get();
 			$roleId = [];
 			$brandId = [];
 			foreach ($role->result_array() as $r) {

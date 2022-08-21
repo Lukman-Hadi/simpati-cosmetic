@@ -65,7 +65,7 @@ class Stock_model extends MY_model
 		$query = $this->db->get();
 		$item = $query->result_array();
 		foreach ($item as $index => $value) {
-			$item[$index]["Pack"] = $this->convertTotalToPackUnit($value["total_stock"], $value["pack_amount"]);
+			$item[$index]["Pack"] = convertTotalToPackUnit($value["total_stock"], $value["pack_amount"]);
 		}
 		// $count = $this->querySingle($sqlCount);
 		$result['total'] = $count['total'];
@@ -80,31 +80,38 @@ class Stock_model extends MY_model
 		$sort = $this->input->get('sort') != null ? strval($this->input->get('sort')) : 'PS.ID';
 		$order = $this->input->get('order') != null ? strval($this->input->get('order')) : 'DESC';
 		$search = $this->input->get('search') != null ? strval($this->input->get('search')) : '';
-		$this->db->select("count(distinct pv.id) as total");
+		$this->db->select("count(pv.id) as total");
 		$this->db->from($this->variantTable);
 		$this->db->join($this->table, "PV.PRODUCT_ID = P.ID AND P.IS_DELETED = 0 AND P.IS_ACTIVE = 1")->join($this->brandTable, "P.BRAND_ID = MB.ID")->join($this->stockTable, "PS.PRODUCT_VARIANT_ID = PV.ID", "LEFT");
 		$this->db->where("PV.IS_DELETED = 0 AND PV.IS_ACTIVE =1");
 		if ($this->input->get('search')) {
-			$this->db->like('PV.NAMA', $search, 'both');
+			$this->db->like("CONCAT(CASE
+								WHEN P.NAMA = PV.NAMA THEN PV.NAMA
+								ELSE CONCAT(P.NAMA, ' - ', PV.NAMA )
+							END,' - ',MB.NAMA)", $search, 'both');
+			$this->db->or_like('PV.NAMA', $search, 'both');
+			$this->db->or_like('P.NAMA', $search, 'both');
 			$this->db->or_like('PV.VARIANT_CODE', $search, 'both');
 			$this->db->or_like('MB.NAMA', $search, 'both');
 			$this->db->or_like('PS.EXPIRED_DATE', $search, 'both');
 		}
 		$count = $this->db->get()->row_array();
-		$this->db->select("PV.ID AS id ,
+		$this->db->select("PS.ID AS id ,
 							PV.ID AS variant_id,
-								CASE
+								CONCAT(CASE
 									WHEN P.NAMA = PV.NAMA THEN PV.NAMA
 									ELSE CONCAT(P.NAMA, ' - ', PV.NAMA )
-								END AS nama ,
+								END,' - ',MB.NAMA) AS nama ,
 								concat(p.nama ,
 							(case when p.nama <> pv.nama then concat(' - ',pv.nama)
 							else '' end)) as product,
-								SUM(PS.TOTAL_STOCK) as total_stock,
+								PS.TOTAL_STOCK as total_stock,
+								PS.EXPIRED_DATE AS expired_date,
 								CAST(CASE
-									WHEN P.PRICE IS NULL THEN (AVG(PS.BUY_PRICE) + ((AVG(PS.BUY_PRICE) * P.MARGIN)/ 100))
+									WHEN P.PRICE IS NULL THEN (PS.BUY_PRICE + ((PS.BUY_PRICE * P.MARGIN)/ 100))
 									ELSE P.PRICE
 								END as DECIMAL) AS price ,
+								CAST(P.PRICE_DIST as DECIMAL) AS price_dist,
 								(
 									SELECT
 										GROUP_CONCAT(CONCAT(MP.AMOUNT, '.', MP.NAMA)SEPARATOR '|')
@@ -121,22 +128,56 @@ class Stock_model extends MY_model
 									join mst_packing mp
 										on mp.id = ppu.packing_id
 									where ppu.product_id =p.id) as packing_units ");
+		// $this->db->select("PV.ID AS id ,
+		// 					PV.ID AS variant_id,
+		// 						CASE
+		// 							WHEN P.NAMA = PV.NAMA THEN PV.NAMA
+		// 							ELSE CONCAT(P.NAMA, ' - ', PV.NAMA )
+		// 						END AS nama ,
+		// 						concat(p.nama ,
+		// 					(case when p.nama <> pv.nama then concat(' - ',pv.nama)
+		// 					else '' end)) as product,
+		// 						SUM(PS.TOTAL_STOCK) as total_stock,
+		// 						CAST(CASE
+		// 							WHEN P.PRICE IS NULL THEN (AVG(PS.BUY_PRICE) + ((AVG(PS.BUY_PRICE) * P.MARGIN)/ 100))
+		// 							ELSE P.PRICE
+		// 						END as DECIMAL) AS price ,
+		// 						(
+		// 							SELECT
+		// 								GROUP_CONCAT(CONCAT(MP.AMOUNT, '.', MP.NAMA)SEPARATOR '|')
+		// 							FROM
+		// 								PRODUCT_PACKING_UNIT PPU
+		// 							JOIN MST_PACKING MP ON
+		// 								PPU.PACKING_ID = MP.ID
+		// 							WHERE
+		// 								PRODUCT_ID = P.ID
+		// 							ORDER BY
+		// 								PPU.SORT_ORDER
+		// 						) pack_amount,
+		// 						(select group_concat(concat(ppu.sort_order,'.',mp.id,'.',mp.nama,'.',mp.amount) ORDER BY ppu.sort_order desc separator'|') from product_packing_unit ppu 
+		// 							join mst_packing mp
+		// 								on mp.id = ppu.packing_id
+		// 							where ppu.product_id =p.id) as packing_units ");
 		$this->db->from($this->variantTable);
 		$this->db->join($this->table, "PV.PRODUCT_ID = P.ID AND P.IS_DELETED = 0 AND P.IS_ACTIVE = 1")->join($this->brandTable, "P.BRAND_ID = MB.ID")->join($this->stockTable, "PS.PRODUCT_VARIANT_ID = PV.ID", "LEFT");
 		$this->db->where("PV.IS_DELETED = 0 AND PV.IS_ACTIVE =1");
 		if ($this->input->get('search')) {
-			$this->db->like('PV.NAMA', $search, 'both');
+			$this->db->like("CONCAT(CASE
+								WHEN P.NAMA = PV.NAMA THEN PV.NAMA
+								ELSE CONCAT(P.NAMA, ' - ', PV.NAMA )
+							END,' - ',MB.NAMA)", $search, 'both');
+			$this->db->or_like('PV.NAMA', $search, 'both');
 			$this->db->or_like('PV.VARIANT_CODE', $search, 'both');
+			$this->db->or_like('P.nama', $search, 'both');
 			$this->db->or_like('PS.EXPIRED_DATE', $search, 'both');
 		}
-		$this->db->group_by('PV.id');
 		$this->db->order_by($sort, $order);
 		$this->db->limit($limit, $offset);
-		// echo $this->db->last_query();die();
 		$query = $this->db->get();
+		// echo $this->db->last_query();die();
 		$item = $query->result_array();
 		foreach ($item as $index => $value) {
-			$item[$index]["Pack"] = $this->convertTotalToPackUnit($value["total_stock"], $value["pack_amount"]);
+			$item[$index]["Pack"] = convertTotalToPackUnit($value["total_stock"], $value["pack_amount"]);
 		}
 		// $count = $this->querySingle($sqlCount);
 		$result['total'] = $count['total'];
@@ -167,7 +208,7 @@ class Stock_model extends MY_model
 		if ($offset > 0) {
 			$offset -= 1;
 		}
-		$this->db->select("count(distinct(pv.id)) as total");
+		$this->db->select("count(pv.id) as total");
 		$this->db->from($this->variantTable);
 		$this->db->join($this->table, "PV.PRODUCT_ID = P.ID and p.is_active = 1 and p.is_deleted = 0")->join($this->stockTable, "PS.PRODUCT_VARIANT_ID = PV.ID");
 		$this->db->where('pv.IS_DELETED', 0)
@@ -183,12 +224,13 @@ class Stock_model extends MY_model
 		}
 		$count = $this->db->get()->row_array();
 		$result['total'] = $count["total"];
-		$this->db->select("pv.id as id,
+		$this->db->select("ps.id as id,
 							pv.id as variant_id,
 							concat(pv.variant_code,' - ',p.nama,
 							(case when p.nama <> pv.nama then concat(' - ',pv.nama)
-							else '' end)
+							else '' end),' - ',ps.expired_date
 						) as text,
+						ps.expired_date,
 						concat(p.nama ,
 							(case when p.nama <> pv.nama then concat(' - ',pv.nama)
 							else '' end)) as product,
@@ -196,9 +238,9 @@ class Stock_model extends MY_model
 						join mst_packing mp
 							on mp.id = ppu.packing_id
 						where ppu.product_id =p.id) as packing_units,
-						SUM(PS.TOTAL_STOCK) as total_stock,
+						PS.TOTAL_STOCK as total_stock,
 						CAST(CASE
-									WHEN P.PRICE IS NULL THEN (AVG(PS.BUY_PRICE) + ((AVG(PS.BUY_PRICE) * P.MARGIN)/ 100))
+									WHEN P.PRICE IS NULL THEN (PS.BUY_PRICE + ((PS.BUY_PRICE * P.MARGIN)/ 100))
 									ELSE P.PRICE
 								END as DECIMAL) AS price")
 			->from($this->variantTable)
@@ -213,7 +255,6 @@ class Stock_model extends MY_model
 			->or_like("p.product_code", $search, "BOTH")
 			->or_like("pv.variant_code", $search, "BOTH");
 		$this->db->group_end();
-		$this->db->group_by('PV.id');
 		$this->db->limit($limit, ($offset * $limit));
 		$query = $this->db->get()->result_array();
 		// $test = $this->db->last_query();
@@ -299,42 +340,73 @@ class Stock_model extends MY_model
 		$query = $this->db->get();
 		$item = $query->result_array();
 		foreach ($item as $index => $value) {
-			$item[$index]["Pack"] = $this->convertTotalToPackUnit($value["total_stock"], $value["pack_amount"]);
+			$item[$index]["Pack"] = convertTotalToPackUnit($value["total_stock"], $value["pack_amount"]);
 		}
 		// $count = $this->querySingle($sqlCount);
 		$result['total'] = $count['total'];
 		$result = array_merge($result, ['rows' => $item]);
 		return $result;
 	}
-
-	function convertTotalToPackUnit($total, $unitString)
+	
+	function getListAllStock()
 	{
-		$units = explode("|", $unitString);
-		$remain = $total;
-		for ($i = 0; $i < count($units); $i++) {
-			$packUnit = explode(".", $units[$i]);
-			$amount[] = $packUnit[0];
-			$unit[] = $packUnit[1];
+		$offset = $this->input->get('offset') != null ? intval($this->input->get('offset')) : 0;
+		$limit = $this->input->get('limit') != null ? intval($this->input->get('limit')) : 20;
+		$sort = $this->input->get('sort') != null ? strval($this->input->get('sort')) : 'TOTAL_STOCK';
+		$order = $this->input->get('order') != null ? strval($this->input->get('order')) : 'DESC';
+		$search = $this->input->get('search') != null ? strval($this->input->get('search')) : '';
+		
+		$sqlFrom = "FROM(
+						SELECT 
+							P.ID AS ID
+							,P.PRODUCT_CODE AS PRODUCT_CODE
+							,P.NAMA AS PRODUCT_NAME
+							,MB.NAMA AS BRAND_NAME
+							,GROUP_CONCAT(DISTINCT PV.NAMA ORDER BY PV.NAMA ASC SEPARATOR ', ') AS LIST_VARIANT
+							,CASE WHEN (UPPER(PV.NAMA) = P.NAMA) THEN PV.LIMIT_REMINDER ELSE (MIN(PV.LIMIT_REMINDER)) END AS LIMIT_REMINDER
+							,SUM(PS.TOTAL_STOCK) AS TOTAL_STOCK
+							,(SELECT
+									GROUP_CONCAT(CONCAT(MP.AMOUNT,'.',MP.NAMA)SEPARATOR'|')
+									FROM PRODUCT_PACKING_UNIT PPU 
+									JOIN MST_PACKING MP ON PPU.PACKING_ID = MP.ID 
+									WHERE PRODUCT_ID =P.ID ORDER BY PPU.SORT_ORDER) PACK_AMOUNT
+						FROM PRODUCTS P
+						LEFT JOIN PRODUCT_VARIANT PV 
+							ON P.ID = PV.PRODUCT_ID
+							AND PV.IS_ACTIVE = 1
+							AND PV.IS_DELETED = 0
+						LEFT JOIN MST_BRAND MB 
+							ON MB.ID = P.BRAND_ID
+							AND MB.IS_ACTIVE = 1
+							AND MB.IS_DELETED = 0
+						LEFT JOIN PRODUCT_STOCKS PS 
+							ON PS.PRODUCT_VARIANT_ID = PV.ID
+						WHERE P.IS_ACTIVE = 1 AND P.IS_DELETED = 0
+						GROUP BY P.ID
+					) PRODUCTS";
+		$sqlCount = "SELECT COUNT(1) AS total $sqlFrom WHERE
+				( UPPER(PRODUCTS.PRODUCT_CODE) LIKE UPPER('%$search%')
+				OR UPPER(PRODUCTS.PRODUCT_NAME) LIKE UPPER('%$search%')
+				OR UPPER(PRODUCTS.BRAND_NAME) LIKE UPPER('%$search%')
+				OR UPPER(PRODUCTS.LIST_VARIANT) LIKE UPPER('%$search%'))";
+		$count = $this->querySingle($sqlCount);
+		$sqlData = "SELECT id,product_code,product_name,brand_name,list_variant, limit_reminder, pack_amount, total_stock $sqlFrom
+					WHERE (
+						UPPER(PRODUCTS.PRODUCT_CODE) LIKE UPPER('%$search%')
+						OR UPPER(PRODUCTS.PRODUCT_NAME) LIKE UPPER('%$search%')
+						OR UPPER(PRODUCTS.BRAND_NAME) LIKE UPPER('%$search%')
+						OR UPPER(PRODUCTS.LIST_VARIANT) LIKE UPPER('%$search%')
+					)
+					ORDER BY $sort $order
+					LIMIT $limit OFFSET $offset";
+		$item = $this->queryArray($sqlData);
+		foreach ($item as $index => $value) {
+			$item[$index]["Pack"] = convertTotalToPackUnit($value["total_stock"], $value["pack_amount"]);
 		}
-		for ($i = 0; $i < count($units); $i++) {
-			$currentAmountPerUnit = 1;
-			for ($j = $i; $j < count($units); $j++) {
-				$currentAmountPerUnit *= $amount[$j];
-			}
-			if ($remain % $currentAmountPerUnit == $remain) {
-				$currentTotalUnit = 0;
-				$remain = $remain;
-			} else {
-				$tempRemain = $remain % $currentAmountPerUnit;
-				$currentTotalUnit = ($remain - $tempRemain) / $currentAmountPerUnit;
-				$remain = $tempRemain;
-			}
-			$temp[] = ["total" => $currentTotalUnit, "unit" => $unit[$i]];
-			if ($remain == 0) {
-				// break;
-			}
-		}
-		return $temp;
+		// $count = $this->querySingle($sqlCount);
+		$result['total'] = $count['total'];
+		$result = array_merge($result, ['rows' => $item]);
+		return $result;
 	}
 
 	function getExpiryStockById($id)
@@ -533,9 +605,9 @@ class Stock_model extends MY_model
 	{
 		$offset = $this->input->get('offset') != null ? intval($this->input->get('offset')) : 0;
 		$limit = $this->input->get('limit') != null ? intval($this->input->get('limit')) : 20;
-		$sort = $this->input->get('sort') != null ? strval($this->db->escape($this->input->get('sort'))) : 'CREATED_AT';
-		$order = $this->input->get('order') != null ? strval($this->db->escape($this->input->get('order'))) : 'DESC';
-		$search = $this->input->get('search') != null ? '%' . strval($this->db->escape($this->input->get('search'))) . '%' : '%%';
+		$sort = $this->input->get('sort') != null ? strval($this->input->get('sort')) : 'sa.CREATED_AT';
+		$order = $this->input->get('order') != null ? strval($this->input->get('order')) : 'DESC';
+		$search = $this->input->get('search') != null ? '%' . strval($this->input->get('search')) . '%' : '%%';
 
 		$sqlCount = "SELECT COUNT(1) as total_rows FROM STOCK_ADJUSTMENT WHERE IS_DELETED = 0 AND (
 						UPPER(REF_NO) LIKE ?
@@ -566,12 +638,12 @@ class Stock_model extends MY_model
 					OR UPPER(USER_MODIFIED) LIKE UPPER(?)
 				)
 				GROUP BY SA.ID
-				ORDER BY ? ?
+				ORDER BY $sort $order
 				LIMIT ? 
 				OFFSET ?
 				";
 		$count = $this->db->query($sqlCount, [$search, $search])->row_array();
-		$item = $this->db->query($sql, [$search, $search, $sort, $order, $limit, $offset])->result();
+		$item = $this->db->query($sql, [$search, $search, $limit, $offset])->result();
 		$result['total'] = $count['total_rows'];
 		$result = array_merge($result, ['rows' => $item]);
 		return $result;
@@ -619,134 +691,4 @@ class Stock_model extends MY_model
 		$data = ["header" => $header->row(), "detail" => $detail];
 		return $data;
 	}
-
-
-
-
-
-
-
-
-	/*
-	function getAll()
-	{
-		$offset = $this->input->get('offset') != null ? intval($this->input->get('offset')) : 0;
-		$limit = $this->input->get('limit') != null ? intval($this->input->get('limit')) : 20;
-		$sort = $this->input->get('sort') != null ? strval($this->input->get('sort')) : 'created_at';
-		$order = $this->input->get('order') != null ? strval($this->input->get('order')) : 'DESC';
-		$search = $this->input->get('search') != null ? strval($this->input->get('search')) : '';
-
-		$this->db->select('id');
-		$this->db->from($this->table);
-		$this->db->where("is_deleted", 0);
-		if ($this->input->get('search')) {
-			$this->db->like('nama', $search, 'both');
-			$this->db->like('description', $search, 'both');
-		}
-		$result['total'] = $this->db->get()->num_rows();
-
-		$this->db->select('id,nama,description,is_active');
-		$this->db->from($this->table);
-		$this->db->where("is_deleted", 0);
-		if ($this->input->get('search')) {
-			$this->db->like('nama', $search, 'both');
-			$this->db->like('description', $search, 'both');
-		}
-		$this->db->order_by($sort, $order);
-		$this->db->limit($limit, $offset);
-		$query = $this->db->get();
-		$item = $query->result_array();
-		$result = array_merge($result, ['rows' => $item]);
-		return $result;
-	}
-
-	function save($data)
-	{
-		return $this->insertOrUpdate($this->table, $data);
-	}
-
-	function isExist($key)
-	{
-		$count = $this->db->select("ID")
-			->from($this->table)
-			->where("ID", $key)
-			->get()
-			->num_rows();
-		if ($count > 0) return true;
-		return false;
-	}
-
-	function getById($id)
-	{
-		$result = array();
-		if (is_null($id) || $id == 0) {
-			$result = array(
-				"status" 	=> FALSE,
-				"message" 	=> MUST_PROVIDED,
-				"data"		=> null
-			);
-			return $result;
-		}
-		$data = $this->db->select("id,nama,description")->where('id', $id)->where('is_deleted', 0)->get($this->table);
-		if ($data->num_rows() == 1) {
-			$result = array(
-				"status" 	=> TRUE,
-				"message" 	=> SUCCESS_GET_DATA,
-				"data"		=> $data->result()
-			);
-		} else {
-			$result = array(
-				"status" 	=> FALSE,
-				"message" 	=> FAILED_GET_DATA,
-				"data"		=> null
-			);
-		}
-		return $result;
-	}
-
-	function delete($id)
-	{
-		$query =  $this->softDelete($this->table, $id);
-		$result = array();
-		if ($query) {
-			$result = ["status" => TRUE, "message" => DELETE_SUCCESS];
-		} else {
-			$result = ["status" => FALSE, "message" => GENERAL_ERROR];
-		}
-		return $result;
-	}
-
-	function setActive($id)
-	{
-		$query = $this->setIsActive($this->table, $id);
-		if ($query) {
-			$result = ["status" => TRUE, "message" => UPDATE_SUCCESS];
-		} else {
-			$result = ["status" => FALSE, "message" => GENERAL_ERROR];
-		}
-		return $result;
-	}
-	
-	function getListBrand(){
-		$data= $this->db->select('id,nama')
-						->from($this->table)
-						->where('is_active',1)
-						->where('is_deleted',0)
-						->get();
-		if($data->num_rows()){
-			$result = array(
-				"status" 	=> TRUE,
-				"message" 	=> SUCCESS_GET_DATA,
-				"data"		=> $data->result()
-			);
-		}else{
-			$result = array(
-				"status" 	=> FALSE,
-				"message" 	=> FAILED_GET_DATA,
-				"data"		=> null
-			);
-		}
-		return $result;
-	}
-	*/
 }

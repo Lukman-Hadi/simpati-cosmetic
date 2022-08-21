@@ -319,18 +319,28 @@
 			processData: false, // Important!
 			contentType: false,
 			success: function(result) {
-				console.log(result);
-				if (result.message == "validationError") {
-					let err = result.data;
-					for (let [key, val] of Object.entries(err)) {
-						addClassValidation(key, val);
-					}
-					$(".form-control").addClass("is-valid");
-				} else {
+				if (result.status) {
 					Toast.fire({
-						type: "error",
+						type: "success",
 						title: "" + result.message + ".",
 					});
+					hideLoaderScreen();
+					window.setTimeout(function() {
+						window.location.href = "<?= base_url('/barang/listbarang') ?>";
+					}, 1000);
+				} else {
+					if (result.message == "validationError") {
+						let err = result.data;
+						for (let [key, val] of Object.entries(err)) {
+							addClassValidation(key, val);
+						}
+						$(".form-control").addClass("is-valid");
+					} else {
+						Toast.fire({
+							type: "error",
+							title: "" + result.message + ".",
+						});
+					}
 				}
 			}
 		})

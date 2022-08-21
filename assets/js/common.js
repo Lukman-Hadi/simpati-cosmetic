@@ -3,12 +3,12 @@ const uang = new Intl.NumberFormat("ID-id", {
 	currency: "IDR",
 });
 
-function rupiahFormatter(val){
+function rupiahFormatter(val) {
 	return uang.format(val);
 }
 
-function totalStockFormatter(val){
-	return String(val)+' Unit';
+function totalStockFormatter(val) {
+	return String(val) + " Unit";
 }
 
 function destroy(id) {
@@ -188,7 +188,7 @@ function ajaxCall(url) {
 	return $.ajax({
 		type: "GET",
 		url,
-		beforeSend: showLoaderScreen()
+		beforeSend: showLoaderScreen(),
 	});
 }
 
@@ -217,3 +217,41 @@ table.on(
 		);
 	}
 );
+
+function fm_filter_tgl() {
+	$("#daterange-btn").daterangepicker(
+		{
+			ranges: {
+				"Hari ini": [moment(), moment()],
+				Kemarin: [moment().subtract("days", 1), moment().subtract("days", 1)],
+				"7 Hari yang lalu": [moment().subtract("days", 6), moment()],
+				"30 Hari yang lalu": [moment().subtract("days", 29), moment()],
+				"Bulan ini": [moment().startOf("month"), moment().endOf("month")],
+				"Bulan kemarin": [
+					moment().subtract("month", 1).startOf("month"),
+					moment().subtract("month", 1).endOf("month"),
+				],
+				"Tahun ini": [
+					moment().startOf("year").startOf("month"),
+					moment().endOf("year").endOf("month"),
+				],
+				"Tahun kemarin": [
+					moment().subtract("year", 1).startOf("year").startOf("month"),
+					moment().subtract("year", 1).endOf("year").endOf("month"),
+				],
+			},
+			showDropdowns: true,
+			format: "YYYY-MM-DD",
+			startDate: moment().startOf("year").startOf("month"),
+			endDate: moment().endOf("year").endOf("month"),
+		},
+
+		function (start, end) {
+			$("#reportrange span").html(
+				start.format("D MMM YYYY") + " - " + end.format("D MMM YYYY")
+			);
+			$('input[name=start_date]').val($('input[name=daterangepicker_start]').val());
+			$('input[name=end_date]').val($('input[name=daterangepicker_end]').val());
+		}
+	);
+}

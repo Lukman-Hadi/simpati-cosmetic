@@ -58,6 +58,7 @@ class MY_model extends CI_Model
 				} else {
 					unset($data["type"]);
 					$this->db->insert($table, $data);
+					$this->db->last_query();
 					continue;
 				}
 			} else if ($data['type'] == 'Penyesuaian') {
@@ -121,8 +122,8 @@ class MY_model extends CI_Model
 		$this->db->where_in('id', $id);
 		return $this->db->update($table, ["is_deleted" => 1, "user_modified" => $this->user, "updated_at" => date('Y-m-d H:i:s')]);
 	}
-	
-	protected function softDeleteChild($table, $key,$id)
+
+	protected function softDeleteChild($table, $key, $id)
 	{
 		$this->db->where_in($key, $id);
 		return $this->db->update($table, ["is_deleted" => 1, "user_modified" => $this->user, "updated_at" => date('Y-m-d H:i:s')]);
@@ -138,5 +139,17 @@ class MY_model extends CI_Model
 	{
 		$this->db->delete($table, [$column => $id]);
 		return $this->db->insert_batch($table, $data);
+	}
+	protected function deleteInsertBatchVariant($table,$data,$parentId)
+	{
+		$id = [];
+		foreach ($data as $key => $value) {
+			// $id[] = $value["id"];
+			$this->insertOrUpdate($table,$value);
+			$id[] = $this->db->insert_id();
+		}
+		$this->db->where('product_id',$parentId);
+		$this->db->where_not_in('id',$id);
+		$this->db->update($table, ["is_deleted" => 1, "user_modified" => $this->user, "updated_at" => date('Y-m-d H:i:s')]);
 	}
 }

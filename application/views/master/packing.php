@@ -218,6 +218,12 @@
         </div>
 		`
 	}
+	
+	async function testCall(){
+		fetch('http://localhost:3000').then(
+			response => console.log(response)
+		);
+	}
 
 	function setDropdown(id, url, comp) {
 		$.ajax({

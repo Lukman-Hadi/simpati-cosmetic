@@ -90,6 +90,7 @@ class Penjualan extends CI_Controller
 		$sellPrice = $this->input->post("sell_price");
 		$subTotal = $this->input->post("sub_total");
 		$variantId = $this->input->post("variant_id");
+		$stockId = $this->input->post("stock_id");
 		$variantName = $this->input->post("variant_name");
 
 		$validate = $this->runValidation();
@@ -110,8 +111,9 @@ class Penjualan extends CI_Controller
 			"trans_date" => $transDate,
 			"remarks"	=> $remarks
 		);
-		for ($i = 0; $i < count($variantId); $i++) {
+		for ($i = 0; $i < count($stockId); $i++) {
 			$detail[] = array(
+				"stock_id" => $stockId[$i],
 				"variant_id" => $variantId[$i],
 				"variant_name" => $variantName[$i],
 				"qty_total" => $totalAmount[$i],

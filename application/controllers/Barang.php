@@ -1,13 +1,16 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
 
+use PhpOffice\PhpSpreadsheet\Reader;
+
 class Barang extends CI_Controller
 {
 	public function __construct()
 	{
 		parent::__construct();
-		if(!is_login())redirect(site_url('login'));
+		if (!is_login()) redirect(site_url('login'));
 		$this->load->model("Barang_model", "barang");
+		$this->load->model("Brand_model", "brand");
 	}
 
 	public function listBarang()
@@ -28,7 +31,7 @@ class Barang extends CI_Controller
 	{
 		$data['title']			= ADD_DESC . ' Barang Baru';
 		$data['subtitle']		= 'Data Barang ' . APPLICATION_NAME;
-		$data['description']	= ADD_INSTRUCTION . ' Daftar Barang Aplikasi ' . APPLICATION_NAME . FROM_INSTRUCTION;
+		$data['description']	= ADD_INSTRUCTION . ' Menambah Barang Aplikasi ' . APPLICATION_NAME . FROM_INSTRUCTION;
 		$data['css_files'][]	= PATH_ASSETS . 'vendor/bootstrap-table/bootstrap-table.min.css';
 		$data['css_files'][]	= PATH_ASSETS . 'vendor/select2/dist/css/select2.min.css';
 		$data['css_files'][]	= PATH_ASSETS . 'vendor/select2/dist/css/select2-bootstrap.css';
@@ -39,6 +42,161 @@ class Barang extends CI_Controller
 		$data['js_files'][]		= PATH_ASSETS . 'js/common.js';
 		$data['js_files'][]		= PATH_ASSETS . 'js/validation.js';
 		$this->template->load('template/template', 'barang/add', $data);
+	}
+
+	public function import()
+	{
+		$data['title']			= ADD_DESC . ' Barang Baru';
+		$data['subtitle']		= 'Data Barang ' . APPLICATION_NAME;
+		$data['description']	= ADD_INSTRUCTION . ' Menambah Barang Aplikasi ' . APPLICATION_NAME;
+		$data['css_files'][]	= PATH_ASSETS . 'vendor/bootstrap-table/bootstrap-table.min.css';
+		$data['js_files'][]		= PATH_ASSETS . 'vendor/bootstrap-table/bootstrap-table.min.js';
+		$data['js_files'][]		= PATH_ASSETS . 'js/common.js';
+		$data['js_files'][]		= PATH_ASSETS . 'js/validation.js';
+		$this->template->load('template/template', 'barang/import', $data);
+	}
+
+	public function edit()
+	{
+		$row = $this->barang->getBarangById($this->uri->segment(3));
+		if (!$row) {
+			return redirect('/');
+		}
+		$data['data'] = $row;
+		$data['title']			= "Edit Data Barang";
+		$data['subtitle']		= 'Data Barang ' . APPLICATION_NAME;
+		$data['description']	= ADD_INSTRUCTION . ' Mengedit Barang Aplikasi ' . APPLICATION_NAME . FROM_INSTRUCTION;
+		$data['css_files'][]	= PATH_ASSETS . 'vendor/bootstrap-table/bootstrap-table.min.css';
+		$data['css_files'][]	= PATH_ASSETS . 'vendor/select2/dist/css/select2.min.css';
+		$data['css_files'][]	= PATH_ASSETS . 'vendor/select2/dist/css/select2-bootstrap.css';
+		$data['js_files'][]		= PATH_ASSETS . 'vendor/bootstrap-table/bootstrap-table.min.js';
+		$data['js_files'][]		= PATH_ASSETS . 'vendor/select2/dist/js/select2.min.js';
+		$data['js_files'][]		= PATH_ASSETS . 'vendor/bootstrap-tagsinput/dist/bootstrap-tagsinput.min.js';
+		$data['js_files'][]		= PATH_ASSETS . 'js/jquery.mask.min.js';
+		$data['js_files'][]		= PATH_ASSETS . 'js/common.js';
+		$data['js_files'][]		= PATH_ASSETS . 'js/validation.js';
+		$this->template->load('template/template', 'barang/edit', $data);
+	}
+
+	public function uploadFileBarang()
+	{
+		$this->output->set_content_type('application/json');
+		if (!empty($_FILES['file']['name'])) {
+			$extension = pathinfo($_FILES['file']['name'], PATHINFO_EXTENSION);
+			if ($extension == 'csv') {
+				$reader = new Reader\Csv;
+			} else if ($extension == 'xlsx') {
+				$reader = new Reader\Xlsx;
+			} else if ($extension == 'xls'){
+				$reader =  new Reader\Xls;
+			}else{
+				$response =  ["status" => false, "message" => 'file harus Xls / Xlsx'];
+				echo json_encode($response);
+				return;
+			}
+			$spreadsheet = $reader->load($_FILES['file']['tmp_name']);
+			$allDataInSheet = $spreadsheet->getActiveSheet()->toArray(null, true, true, true);
+			$arrayCount = count($allDataInSheet);
+			$flag = 0;
+			$createArray = array('kode_barang', 'nama_barang', 'variant', 'id_brand', 'harga', 'harga_apotik', 'harga_modal');
+			$makeArray = array('kode_barang' => 'kode_barang', 'nama_barang' => 'nama_barang', 'variant' => 'variant', 'id_brand' => 'id_brand', 'harga' => 'harga', 'harga_apotik' => 'harga_apotik', 'harga_modal' => 'harga_modal');
+			$SheetDataKey = array();
+			foreach ($allDataInSheet as $dataInSheet) {
+				foreach ($dataInSheet as $key => $value) {
+					if (in_array(trim($value), $createArray)) {
+						$value = preg_replace('/\s+/', '', $value);
+						$SheetDataKey[trim($value)] = $key;
+					}
+				}
+			}
+			$dataDiff = array_diff_key($makeArray, $SheetDataKey);
+			if (empty($dataDiff)) {
+				$flag = 1;
+			}
+			// match excel sheet column
+			if ($flag == 1) {
+				for ($i = 2; $i <= $arrayCount; $i++) {
+					$kodeBarang = $SheetDataKey['kode_barang'];
+					$namaBarang = $SheetDataKey['nama_barang'];
+					$variant = $SheetDataKey['variant'];
+					$brand = $SheetDataKey['id_brand'];
+					$harga = $SheetDataKey['harga'];
+					$hargaApotik = $SheetDataKey['harga_apotik'];
+					$hargaModal = $SheetDataKey['harga_modal'];
+
+					// $addresses = array();
+					// $firstName = $SheetDataKey['First_Name'];
+					// $lastName = $SheetDataKey['Last_Name'];
+					// $email = $SheetDataKey['Email'];
+					// $dob = $SheetDataKey['DOB'];
+					// $contactNo = $SheetDataKey['Contact_No'];
+
+					$kodeBarang = filter_var(trim($allDataInSheet[$i][$kodeBarang]), FILTER_SANITIZE_STRING);
+					$namaBarang = filter_var(trim($allDataInSheet[$i][$namaBarang]), FILTER_SANITIZE_STRING);
+					$variant = filter_var(trim($allDataInSheet[$i][$variant]), FILTER_SANITIZE_STRING);
+					$brand = filter_var(trim($allDataInSheet[$i][$brand]), FILTER_SANITIZE_STRING);
+					$harga = filter_var(trim($allDataInSheet[$i][$harga]), FILTER_SANITIZE_NUMBER_INT);
+					$hargaApotik = filter_var(trim($allDataInSheet[$i][$hargaApotik]), FILTER_SANITIZE_NUMBER_INT);
+					$hargaModal = filter_var(trim($allDataInSheet[$i][$hargaModal]), FILTER_SANITIZE_NUMBER_INT);
+					$fetchData[] = array('kode_barang' => $kodeBarang, 'nama_barang' => $namaBarang, 'variant' => $variant, 'brand' => $brand, 'harga' => $harga, 'harga_apotik' => $hargaApotik, 'harga_modal' => $hargaModal);
+				}
+			}
+			$brandList = $this->brand->getBrand();
+			foreach ($fetchData as $key => $value) {
+				if($value['kode_barang']=='' || $value['kode_barang']==' '){
+					$productNameFromExcel = explode(' ',$value['nama_barang']);
+					$productBrand = $brandList[array_search($value['brand'],array_column($brandList,'id'))]['nama'];
+					$productCode = '';
+					foreach ($productNameFromExcel as $name) {
+						$productCode .= substr($name,0,1);
+					}
+					$productCode = clean($productBrand).'-'.$productCode;
+				}else{
+					$productCode = $value['kode_barang'];
+				}
+				$productHeader = array(
+					// "id" => $id,
+					"nama" => $value['nama_barang'],
+					"product_code" => $productCode,
+					"barcode" => '',
+					"brand_id" => $value['brand'],
+					"description" => 'from upload',
+					"price"	=> $value['harga'],
+					"price_dist"	=> $value['harga_apotik'],
+				);
+				$variant = $value["variant"];
+				$variantArr = explode(',', $variant);
+				if (count($variantArr) > 1) {
+					$productVariant = array();
+					for ($i = 0; $i < count($variantArr); $i++) {
+						if($variantArr[$i]==''||$variantArr[$i]==' '|| is_null($variantArr[$i])) continue;
+						$productVariant[] = array(
+							"nama" => $variantArr[$i],
+							"variant_code" => $productCode . "-" . $variantArr[$i],
+							"description" => 'from upload',
+							"limit_reminder" => 0
+						);
+					}
+				} else {
+					$productVariant[] = array(
+						"nama" => $value['nama_barang'],
+						"variant_code" => $productCode,
+						"description" => 'from upload',
+						"limit_reminder" => 0,
+					);
+				}
+				$toSave[] = ['product_header' => $productHeader, 'product_variant' => $productVariant];
+				unset($productVariant);
+			}
+			$query = $this->barang->saveFromFile($toSave);
+			$response = array();
+			if ($query) {
+				$response =  ["status" => true, "message" => SAVE_SUCCESS];
+			} else {
+				$response =  ["status" => false, "message" => SAVE_FAILED];
+			}
+			echo json_encode($response);
+		}
 	}
 
 	public function getProducts()
@@ -78,6 +236,60 @@ class Barang extends CI_Controller
 		$variantLimit = $this->input->post("variant_limit");
 
 		if ($productId) {
+			if (!$this->form_validation->run("product_update")) {
+				$errorMessage = $this->form_validation->error_array();
+				$res = array(
+					"status" 	=> FALSE,
+					"message" 	=> VALIDATION_ERROR,
+					"data"		=> $errorMessage
+				);
+				echo json_encode($res);
+				return;
+			} else {
+				if ($variantName) {
+					$validation = $this->variantValidation();
+					if ($validation->error) {
+						$res = array(
+							"status" 	=> FALSE,
+							"message" 	=> VALIDATION_ERROR,
+							"data"		=> $validation->errorMessage
+						);
+						echo json_encode($res);
+						return;
+					}
+				}
+
+				$productHeader = array(
+					"id" => $productId,
+					"nama" => $productName,
+					"product_code" => $productCode,
+					"barcode" => $barcode,
+					"brand_id" => $brandId,
+					"description" => $description,
+				);
+				$productVariant[] = array(
+					"id" => $variantId ? $variantId[0] : null,
+					"nama" => $productName,
+					"variant_code" => $productCode,
+					"description" => $description,
+					"limit_reminder" => $limit,
+				);
+				$countVariant = count($variantName);
+				if ($countVariant >= 1) {
+					$productVariant = array();
+					for ($i = 0; $i < $countVariant; $i++) {
+						$productVariant[] = array(
+							"id" => $variantId[$i],
+							"nama" => $variantName[$i],
+							"variant_code" => $productCode . "-" . $variantCode[$i],
+							"description" => $variantDescription[$i],
+							"limit_reminder" => $variantLimit[$i]
+						);
+					}
+				};
+			}
+			// echo json_encode($this->input->post());
+			// return;
 		} else {
 			if (!$this->form_validation->run("product_save")) {
 				$errorMessage = $this->form_validation->error_array();
@@ -102,44 +314,44 @@ class Barang extends CI_Controller
 					}
 				}
 			}
+			$productHeader = array(
+				// "id" => $id,
+				"nama" => $productName,
+				"product_code" => $productCode,
+				"barcode" => $barcode,
+				"brand_id" => $brandId,
+				"description" => $description,
+			);
+			$productVariant[] = array(
+				// "id" => $variantId[0],
+				"nama" => $productName,
+				"variant_code" => $productCode,
+				"description" => $description,
+				"limit_reminder" => $limit,
+			);
+			$countVariant = count($variantName);
+			if ($countVariant >= 1) {
+				$productVariant = array();
+				for ($i = 0; $i < $countVariant; $i++) {
+					$productVariant[] = array(
+						// "id" => $variantId[$i+1],
+						"nama" => $variantName[$i],
+						"variant_code" => $productCode . "-" . $variantCode[$i],
+						"description" => $variantDescription[$i],
+						"limit_reminder" => $variantLimit[$i]
+					);
+				}
+			};
 		}
+
 		$sellMethodValue = str_replace([",", "."], "", $sellMethodValue);
 		if ($sellMethod == "margin") {
 			$sellMethodValue = ["margin" => $sellMethodValue];
 		} else {
 			$sellMethodValue = ["price" => $sellMethodValue];
 		}
-		$productHeader = array(
-			// "id" => $id,
-			"nama" => $productName,
-			"product_code" => $productCode,
-			"barcode" => $barcode,
-			"brand_id" => $brandId,
-			"description" => $description,
-		);
 		$productHeader = array_merge($productHeader, $sellMethodValue);
 
-		$productVariant[] = array(
-			// "id" => $variantId[0],
-			"nama" => $productName,
-			"variant_code" => $productCode,
-			"description" => $description,
-			"limit_reminder" => $limit,
-		);
-
-		$countVariant = count($variantName);
-		if ($countVariant >= 1) {
-			$productVariant = array();
-			for ($i = 0; $i < $countVariant; $i++) {
-				$productVariant[] = array(
-					// "id" => $variantId[$i+1],
-					"nama" => $variantName[$i],
-					"variant_code" => $productCode . "-" . $variantCode[$i],
-					"description" => $variantDescription[$i],
-					"limit_reminder" => $variantLimit[$i]
-				);
-			}
-		};
 		$query = $this->barang->save($productHeader, $productVariant, $packageUnitid);
 		$response = array();
 		if ($query) {
@@ -148,8 +360,6 @@ class Barang extends CI_Controller
 			$response =  ["status" => false, "message" => SAVE_FAILED];
 		}
 		echo json_encode($response);
-		// $res = [$productHeader, $productVariant, $packageUnitid];
-		// echo json_encode($res);
 	}
 
 	public function isProductCodeExist($key)
