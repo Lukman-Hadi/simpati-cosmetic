@@ -21,7 +21,7 @@ class Stock_model extends MY_model
 	{
 		$offset = $this->input->get('offset') != null ? intval($this->input->get('offset')) : 0;
 		$limit = $this->input->get('limit') != null ? intval($this->input->get('limit')) : 20;
-		$sort = $this->input->get('sort') != null ? strval($this->input->get('sort')) : 'PS.ID';
+		$sort = $this->input->get('sort') != null ? strval($this->input->get('sort')) : 'PS.TOTAL_STOCK';
 		$order = $this->input->get('order') != null ? strval($this->input->get('order')) : 'DESC';
 		$search = $this->input->get('search') != null ? strval($this->input->get('search')) : '';
 		$this->db->select("count(1) as total");

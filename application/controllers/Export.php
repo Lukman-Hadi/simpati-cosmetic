@@ -96,13 +96,13 @@ class Export extends CI_Controller
 		$spreadsheet = new Spreadsheet;
 
 		$spreadsheet->setActiveSheetIndex(0)
-			->setCellValue('A1', 'Id')
-			->setCellValue('B1', 'Kode Barang')
-			->setCellValue('C1', 'Nama Barang')
-			->setCellValue('D1', 'Merk')
-			->setCellValue('E1', 'Qty')
-			->setCellValue('F1', 'Harga Beli')
-			->setCellValue('G1', 'Tanggal Expired');
+			->setCellValue('A1', 'id')
+			->setCellValue('B1', 'kode_barang')
+			->setCellValue('C1', 'nama_barang')
+			->setCellValue('D1', 'merk')
+			->setCellValue('E1', 'qty(pcs)')
+			->setCellValue('F1', 'harga_beli')
+			->setCellValue('G1', 'tanggal_expired');
 		$kolom = 2;
 		foreach ($data as $d) {
 

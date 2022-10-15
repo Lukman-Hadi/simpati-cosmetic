@@ -153,7 +153,7 @@
 				</form>
 			</div>
 		</div>
-		<div class="col-xl-6 col-lg-12 d-none" id="tableStockSection">
+		<div class="col-xl-12 col-lg-12 d-none" id="tableStockSection">
 			<div class="card">
 				<div class="card-header">
 					<div class="row">
@@ -266,7 +266,7 @@
 		if ($(this).is(':checked')) {
 			$('#tableStockSection').removeClass('d-none');
 			$('#mainSection').removeClass();
-			$('#mainSection').addClass('col-xl-6 col-lg-12');
+			$('#mainSection').addClass('col-xl-12 col-lg-12');
 		} else {
 			$('#tableStockSection').addClass('d-none');
 			$('#mainSection').removeClass();

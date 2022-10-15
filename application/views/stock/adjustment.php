@@ -190,7 +190,7 @@
 						<td><input class="form-control form-control-sm" type="text" name="buy_price_before[]" value="${(Number(data.buy_price)).toLocaleString("en-US")}" readonly></td>
 						<td><input class="form-control form-control-sm" type="text" name="expiry_date_before[]" value="${data.expiry_date}" readonly></td>
 						<td><input class="form-control form-control-sm" type="number" name="total[]" min="1" value="1"></td>
-						<td><input class="form-control form-control-sm price" type="number" name="buy_price[]" value="0"></td>
+						<td><input class="form-control form-control-sm price no-validate" type="number" name="buy_price[]" value="0"></td>
 						<td><input class="form-control form-control-sm" name="expiry_date[]" type="date"></td>
 						<td><a href="javascript:void(0);" role="button" class="badge badge-pill badge-danger badge-sm" data-toggle="tooltip" data-placement="top" onclick="deleteRow(${data.stock_id})" title="Hapus Barang"><i class="fa fa-trash"></i></a></td>
 					</tr>`

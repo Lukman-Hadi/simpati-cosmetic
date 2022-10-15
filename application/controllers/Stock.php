@@ -205,7 +205,7 @@ class Stock extends CI_Controller
 					$qty = $SheetDataKey['qty(pcs)'];
 					$hargaBeli = $SheetDataKey['harga_beli'];
 					$tanggalExpired = $SheetDataKey['tanggal_expired'];
-
+					
 					$idVariant = filter_var(trim($allDataInSheet[$i][$idVariant]), FILTER_SANITIZE_NUMBER_INT);
 					$kodeVariant = filter_var(trim($allDataInSheet[$i][$kodeVariant]), FILTER_SANITIZE_STRING);
 					$namaVariant = filter_var(trim($allDataInSheet[$i][$namaVariant]), FILTER_SANITIZE_STRING);
@@ -213,6 +213,9 @@ class Stock extends CI_Controller
 					$qty = filter_var(trim($allDataInSheet[$i][$qty]), FILTER_SANITIZE_NUMBER_INT);
 					$hargaBeli = filter_var(trim($allDataInSheet[$i][$hargaBeli]), FILTER_SANITIZE_NUMBER_INT);
 					$tanggalExpired = trim($allDataInSheet[$i][$tanggalExpired]);
+					if(empty($qty)){
+						continue;
+					}
 					$fetchData[] = array('id_variant' => $idVariant, 'kode_variant' => $kodeVariant, 'nama_variant' => $namaVariant, 'qty' => $qty, 'harga_beli' => $hargaBeli, 'tanggalExpired' => $tanggalExpired);
 				}
 			}
