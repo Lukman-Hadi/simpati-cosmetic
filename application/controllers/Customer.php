@@ -61,12 +61,14 @@ class Customer extends CI_Controller
 			$id = $this->input->post("id");
 			$nama = $this->input->post("nama");
 			$description = $this->input->post("description");
+			$isDistributor = $this->input->post("is_distributor")?:0;
 
 			if ($id) {
 				$toSave = array(
 					"id"			=> $id,
 					"nama"			=> $nama,
 					"description"	=> $description,
+					"is_distributor"	=> $isDistributor,
 					"is_active"		=> 1,
 					"is_deleted"	=> 0
 				);
@@ -74,6 +76,7 @@ class Customer extends CI_Controller
 				$toSave = array(
 					"nama"			=> $nama,
 					"description"	=> $description,
+					"is_distributor"	=> $isDistributor,
 					"is_active"		=> 1,
 					"is_deleted"	=> 0
 				);

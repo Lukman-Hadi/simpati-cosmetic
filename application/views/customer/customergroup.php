@@ -46,6 +46,7 @@
 								<th data-width="2" data-width-unit="%" data-checkbox="true"></th>
 								<th data-field="nama" data-width="30" data-width-unit="%">Nama Grup Customer</th>
 								<th data-field="description" data-width="30" data-width-unit="%">Deskripsi</th>
+								<th data-field="is_distributor" data-formatter="checkedFormatter" data-width="1" data-width-unit="%">Harga Distributor</th>
 								<th data-field="is_active" data-sortable="true" data-width="1" data-width-unit="%" data-formatter="statusFormatter">Status</th>
 								<th data-field="action" data-width="10" data-width-unit="%" data-formatter="actionFormatter">Action</th>
 							</tr>
@@ -78,6 +79,10 @@
 							<div class="form-group" id="description">
 								<label>Dekripsi Grup Customer</label>
 								<textarea name="description" id="taDescription" rows="7" class="form-control" resize="none"></textarea>
+							</div>
+							<div class="custom-control custom-checkbox">
+								<input class="custom-control-input" id="isDistributor" name="is_distributor" value="1" type="checkbox">
+								<label class="custom-control-label" for="isDistributor">Harga Distributor</label>
 							</div>
 							<div class="text-center">
 								<button id="btnSubmit" type="submit" class="btn btn-primary my-4">Simpan</button>
@@ -119,6 +124,9 @@
 					$(`input[name=${key}]`).val(val);
 					$(`textarea[name=${key}]`).val(val);
 				}
+				let isDistributor = data.is_distributor === '1'?true:false;
+				$('#isDistributor').prop('checked',isDistributor);
+				$('#isDistributor').val(1);
 				$('#ff').append(`<input type="hidden" name="id" value="${data.id}" id="id_form">`)
 				hideLoaderScreen();
 			}

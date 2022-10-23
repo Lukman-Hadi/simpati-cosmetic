@@ -193,6 +193,7 @@
 	const testUrl = <?= json_encode(base_url('stock/getExpiryDate')) ?>;
 	const urlSelectCust = <?= json_encode(base_url('customer/getCustomerListSelect')) ?>;
 	const form = $('#form');
+	let isDistributor = false;
 	$(document).ready(function() {
 		$.fn.select2.defaults.set("theme", "bootstrap");
 		hideLoaderScreen();
@@ -277,11 +278,17 @@
 		let data = e.params.data;
 		appendVariantRow(data);
 	});
+	selectCustomer.on('select2:select',function(e){
+		let data = e.params.data;
+		isDistributor = data.is_distributor === '1';
+	})
 
 	function appendVariantRow(data) {
 		selectProduct.val(null).trigger('change');
 		selectProduct.select2('close');
 		console.log(data);
+		let distPrice = (data.price_dist && data.price_dist !=0)? data.price_dist:data.price;
+		let price = isDistributor?distPrice:data.price;
 		if ($(`#variantRow${data.id}`).length) {
 			let element = $(`#variantRow${data.id} input[name="amount_unit[]"]`);
 			let num = parseInt(element.val(), 10);
@@ -311,7 +318,7 @@
 									<div class="input-group-prepend">
 										<span class="input-group-text"><small class="font-weight-bold">Rp. </small></span>
 									</div>
-									<input type="text" name="sell_price[]" class="form-control form-control-sm price" value="${data.price}" onkeyup="calculateRow(${data.id})" onchange="calculateRow(${data.id})">
+									<input type="text" name="sell_price[]" class="form-control form-control-sm price" value="${price}" onkeyup="calculateRow(${data.id})" onchange="calculateRow(${data.id})">
 								</div>
 							</td>
 							<td><input type="hidden" name="sub_total[]" onchange="calculateGrandTotal()"><span class="subtotal">0</span></td>
@@ -401,7 +408,7 @@
 		return row.total_stock > 0 ? `
 		<div class="col-12 p-0 text-center">
 		<div class="row d-flex justify-content-center">
-			<a href="#" href="javascript:void(0);" class="badge badge-pill badge-secondary badge-sm p-1" data-toggle="tooltip" data-placement="top" title="Tambahkan Item" onClick="appendVariantRow(JSON.parse('${JSON.stringify(row).replace(/'/g, '&apos;').replace(/"/g, '&quot;')}'))"><i class="fa fa-plus-circle text-lg"></i></a>
+			<a href="javascript:void(0);" class="badge badge-pill badge-secondary badge-sm p-1" data-toggle="tooltip" data-placement="top" title="Tambahkan Item" onClick="appendVariantRow(JSON.parse('${JSON.stringify(row).replace(/'/g, '&apos;').replace(/"/g, '&quot;')}'))"><i class="fa fa-plus-circle text-lg"></i></a>
 		</div>
 		</div>
 		` : '-';

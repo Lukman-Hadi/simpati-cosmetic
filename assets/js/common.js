@@ -102,6 +102,14 @@ function statusFormatter(val, row) {
 	}
 }
 
+function checkedFormatter(val, row) {
+	if (val == 1) {
+		return `<i class="text-success fa fa-check"></i>`;
+	} else {
+		return `<i class="text-danger fa fa-times"></i>`;
+	}
+}
+
 function activeNonActive(id) {
 	showLoaderScreen();
 	$.post(

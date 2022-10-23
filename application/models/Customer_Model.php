@@ -29,7 +29,7 @@ class Customer_model extends MY_model
 		}
 		$result['total'] = $this->db->get()->num_rows();
 
-		$this->db->select('id,nama,description,is_active');
+		$this->db->select('id,nama,description,is_distributor,is_active');
 		$this->db->from($this->tableGroup);
 		$this->db->where("is_deleted", 0);
 		if ($this->input->get('search')) {
@@ -71,7 +71,7 @@ class Customer_model extends MY_model
 			);
 			return $result;
 		}
-		$data = $this->db->select("id,nama,description")->where('id', $id)->where('is_deleted', 0)->get($this->tableGroup);
+		$data = $this->db->select("id,nama,description,is_distributor")->where('id', $id)->where('is_deleted', 0)->get($this->tableGroup);
 		if ($data->num_rows() == 1) {
 			$result = array(
 				"status" 	=> TRUE,
@@ -277,15 +277,16 @@ class Customer_model extends MY_model
 			$this->db->like('nama', $search, 'both');
 		}
 		$result['total'] = $this->db->get()->num_rows();
-		$this->db->select('id,nama as text')
-			->from($this->table)
-			->where('IS_DELETED', 0)
-			->where('IS_ACTIVE', 1);
+		$this->db->select('c.id,c.nama as text,g.is_distributor')
+			->from($this->table.' c')
+			->join($this->tableGroup.' g','c.customer_group_id = g.id')
+			->where('c.IS_DELETED', 0)
+			->where('c.IS_ACTIVE', 1);
 		if ($this->input->get('q')) {
-			$this->db->like('nama', $search, 'both');
+			$this->db->like('c.nama', $search, 'both');
 		}
-		if ($this->input->get('id') == '0' || $this->input->get('id')) {
-			$this->db->where('id', $id);
+		if ($this->input->get('c.id') == '0' || $this->input->get('c.id')) {
+			$this->db->where('c.id', $id);
 		}
 		$this->db->limit($limit, ($offset * $limit));
 		$query = $this->db->get()->result_array();
