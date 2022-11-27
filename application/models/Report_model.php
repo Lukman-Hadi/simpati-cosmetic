@@ -149,7 +149,7 @@ class Report_model extends MY_model
 
 	function daftarBarang($brand)
 	{
-		$sql = "SELECT product_code,product_name,brand_name,list_variant,IFNULL(PRICE,MARGIN) AS sell_value,sell_method,price_dist,limit_reminder, product_smallest_pack as packing
+		$sql = "SELECT product_code,product_name,brand_name,list_variant,IFNULL(PRICE,MARGIN) AS sell_value,sell_method,price_dist,base_price,limit_reminder, product_smallest_pack as packing
 				FROM(
 					SELECT 
 						P.ID AS ID
@@ -161,6 +161,7 @@ class Report_model extends MY_model
 						,P.IS_ACTIVE AS IS_ACTIVE
 						,P.BARCODE AS BARCODE
 						,P.PRICE_DIST AS PRICE_DIST
+						,P.BASE_PRICE AS BASE_PRICE
 						,CASE WHEN (P.PRICE IS NOT NULL) THEN 'RP' ELSE '%' END AS SELL_METHOD 
 						,GROUP_CONCAT(DISTINCT PV.NAMA ORDER BY PV.NAMA ASC SEPARATOR ', ') AS LIST_VARIANT
 						,CASE WHEN (UPPER(PV.NAMA) = P.NAMA) THEN PV.LIMIT_REMINDER ELSE (MIN(PV.LIMIT_REMINDER)) END AS LIMIT_REMINDER

@@ -337,7 +337,7 @@ class Barang_model extends MY_model
 
 	function getBarangById($id)
 	{
-		$queryHeader = "SELECT P.id,P.nama as nama,p.product_code, p.barcode, p.brand_id, mb.nama as brand_name, p.margin, p.price,p.price_dist, p.description FROM PRODUCTS P JOIN MST_BRAND MB ON MB.ID = P.BRAND_ID WHERE p.ID = ?";
+		$queryHeader = "SELECT P.id,P.nama as nama,p.product_code, p.barcode, p.brand_id, mb.nama as brand_name, p.margin, p.price,p.price_dist,p.base_price, p.description FROM PRODUCTS P JOIN MST_BRAND MB ON MB.ID = P.BRAND_ID WHERE p.ID = ?";
 		$queryPack = "SELECT PACKING_ID,SORT_ORDER, concat(mp.unit,' (',mp.nama,')') as text FROM PRODUCT_PACKING_UNIT PPU
 		join mst_packing mp on mp.id = ppu.packing_id WHERE PRODUCT_ID = ? ORDER BY SORT_ORDER ASC;";
 		$queryVariant = "SELECT 

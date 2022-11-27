@@ -122,6 +122,10 @@
 									<label>Harga Jual Distributor</label>
 									<input type="number" name="selling_dist" class="form-control form-control-sm">
 								</div>
+								<div class="form-group" id="selling_dist">
+									<label>Harga Modal</label>
+									<input type="number" name="base_price" class="form-control form-control-sm">
+								</div>
 								<div>
 									<div class="form-group row pb-0">
 										<label class="col-9 col-form-label pb-0">Satuan Kemasan (Urutan Dari Yang Terbesar)</label>

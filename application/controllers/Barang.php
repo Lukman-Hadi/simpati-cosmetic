@@ -163,6 +163,7 @@ class Barang extends CI_Controller
 					"description" => 'from upload',
 					"price"	=> $value['harga'],
 					"price_dist"	=> $value['harga_apotik'],
+					"base_price" => $value['harga_modal']
 				);
 				$variant = $value["variant"];
 				$variantArr = explode(',', $variant);
@@ -224,6 +225,7 @@ class Barang extends CI_Controller
 		$productName = $this->input->post("nama");
 		$barcode = $this->input->post("barcode");
 		$sellingDist = $this->input->post("selling_dist");
+		$basePrice = $this->input->post("base_price");
 		$brandId = $this->input->post("brand_id");
 		$limit = $this->input->post("limit_primary");
 		$sellMethod = $this->input->post("selling_method");
@@ -347,9 +349,9 @@ class Barang extends CI_Controller
 
 		$sellMethodValue = str_replace([",", "."], "", $sellMethodValue);
 		if ($sellMethod == "margin") {
-			$sellMethodValue = ["margin" => $sellMethodValue,"price_dist"=>$sellingDist];
+			$sellMethodValue = ["margin" => $sellMethodValue,"price_dist"=>$sellingDist,"base_price"=>$basePrice];
 		} else {
-			$sellMethodValue = ["price" => $sellMethodValue,"price_dist"=>$sellingDist];
+			$sellMethodValue = ["price" => $sellMethodValue,"price_dist"=>$sellingDist,"base_price"=>$basePrice];
 		}
 		$productHeader = array_merge($productHeader, $sellMethodValue);
 

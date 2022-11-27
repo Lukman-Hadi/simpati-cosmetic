@@ -110,7 +110,8 @@ class Export extends CI_Controller
 				->setCellValue('A' . $kolom, $d->id)
 				->setCellValue('B' . $kolom, $d->variant_code)
 				->setCellValue('C' . $kolom, $d->product)
-				->setCellValue('D' . $kolom, $d->brand_name);
+				->setCellValue('D' . $kolom, $d->brand_name)
+				->setCellValue('F' . $kolom, $d->base_price);
 			$kolom++;
 		}
 

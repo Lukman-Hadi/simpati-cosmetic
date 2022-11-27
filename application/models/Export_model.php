@@ -55,7 +55,8 @@ class Export_model extends MY_model
 					PV.ID AS id,
 					PV.VARIANT_CODE as variant_code, 
 					upper(CONCAT(P.NAMA , (CASE WHEN P.NAMA <> PV.NAMA THEN CONCAT(' - ', PV.NAMA) ELSE '' END))) AS product,
-					MB.NAMA as brand_name 
+					MB.NAMA as brand_name,
+					P.BASE_PRICE as base_price
 				FROM
 					PRODUCT_VARIANT PV
 				JOIN PRODUCTS P ON

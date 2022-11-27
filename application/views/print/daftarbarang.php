@@ -38,6 +38,7 @@
 		<th style="width: 15%;">Daftar Variant</th>
 		<th style="width: 5%;">Harga</th>
 		<th style="width: 10%;">Harga Apotik</th>
+		<th style="width: 10%;">Harga Modal</th>
 	</thead>
 	<tbody>
 		<?php $i=0; foreach ($data as $key => $value) {$i++; ?>
@@ -49,6 +50,7 @@
 				<td><?= $value['list_variant'] == $value['product_name'] ? '-' : $value['list_variant'] ?></td>
 				<td><?= 'Rp. ' . number_format($value['sell_value']) ?></td>
 				<td><?= 'Rp. ' . number_format($value['price_dist']) ?></td>
+				<td><?= 'Rp. ' . number_format($value['base_price']) ?></td>
 			</tr>
 		<?php } ?>
 	</tbody>
