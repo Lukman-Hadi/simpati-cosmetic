@@ -2,6 +2,7 @@
 
 application/cache/*
 application/session/*
+application/config/database.php
 !application/cache/index.html
 
 application/logs/*
