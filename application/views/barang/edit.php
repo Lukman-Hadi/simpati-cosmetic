@@ -119,6 +119,10 @@
 										<input type="text" name="selling_method_value" class="form-control form-control-sm" value="<?= $data["margin"] == '' ? intval($data["price"]) : intval($data["margin"]) ?>">
 									</div>
 								</div>
+								<div class="form-group" id="selling_dist">
+									<label>Harga Jual Distributor</label>
+									<input type="number" name="selling_dist" value="<?=intval($data["price_dist"])?>" class="form-control form-control-sm">
+								</div>
 								<div>
 									<div class="form-group row pb-0">
 										<label class="col-9 col-form-label pb-0">Satuan Kemasan (Urutan Dari Yang Terbesar)</label>

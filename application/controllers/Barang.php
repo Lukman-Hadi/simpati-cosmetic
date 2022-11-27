@@ -223,6 +223,7 @@ class Barang extends CI_Controller
 		$productCode = $this->input->post("product_code");
 		$productName = $this->input->post("nama");
 		$barcode = $this->input->post("barcode");
+		$sellingDist = $this->input->post("selling_dist");
 		$brandId = $this->input->post("brand_id");
 		$limit = $this->input->post("limit_primary");
 		$sellMethod = $this->input->post("selling_method");
@@ -346,9 +347,9 @@ class Barang extends CI_Controller
 
 		$sellMethodValue = str_replace([",", "."], "", $sellMethodValue);
 		if ($sellMethod == "margin") {
-			$sellMethodValue = ["margin" => $sellMethodValue];
+			$sellMethodValue = ["margin" => $sellMethodValue,"price_dist"=>$sellingDist];
 		} else {
-			$sellMethodValue = ["price" => $sellMethodValue];
+			$sellMethodValue = ["price" => $sellMethodValue,"price_dist"=>$sellingDist];
 		}
 		$productHeader = array_merge($productHeader, $sellMethodValue);
 

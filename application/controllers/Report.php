@@ -66,7 +66,7 @@ class Report extends CI_Controller
 		$brand = implode(",", $brand);
 
 		$dataRow = $this->report->daftarBarang($brand);
-		$data['title']			= REPORT . ' Keluar Masuk Barang';
+		$data['title']			= REPORT . ' Daftar Barang';
 		$data['css_files'][]	= '';
 		$data['js_files'][]		= '';
 		$data['data'] = $dataRow;
@@ -75,7 +75,7 @@ class Report extends CI_Controller
 	
 	public function listStock()
 	{
-		$data['title']			= REPORT . ' Daftar Barang';
+		$data['title']			= REPORT . ' Daftar Stock';
 		$data['description']	= 'Silahkan sesuaikan filter';
 		$data['subtitle']		= REPORT . ' Daftar Barang';
 		$data['css_files'][]	= PATH_ASSETS . 'vendor/select2/dist/css/select2.min.css';
@@ -101,7 +101,7 @@ class Report extends CI_Controller
 	
 	public function listStockPerProduct()
 	{
-		$data['title']			= REPORT . ' Daftar Barang';
+		$data['title']			= REPORT . ' Daftar Stok per Product';
 		$data['description']	= 'Silahkan sesuaikan filter';
 		$data['subtitle']		= REPORT . ' Daftar Barang';
 		$data['css_files'][]	= PATH_ASSETS . 'vendor/select2/dist/css/select2.min.css';

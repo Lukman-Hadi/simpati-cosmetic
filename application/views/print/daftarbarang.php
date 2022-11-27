@@ -31,6 +31,7 @@
 </div>
 <table class="table print" style="width: 100%;">
 	<thead>
+		<th style="width: 1%;">No</th>
 		<th style="width: 15%;">Nama Barang</th>
 		<th style="width: 10%;">Kode Barang</th>
 		<th style="width: 10%;">Merk Barang</th>
@@ -39,8 +40,9 @@
 		<th style="width: 10%;">Harga Apotik</th>
 	</thead>
 	<tbody>
-		<?php foreach ($data as $key => $value) { ?>
+		<?php $i=0; foreach ($data as $key => $value) {$i++; ?>
 			<tr>
+				<td><?= $i ?></td>
 				<td><?= $value['product_name'] ?></td>
 				<td><?= $value['product_code'] ?></td>
 				<td><?= $value['brand_name'] ?></td>
