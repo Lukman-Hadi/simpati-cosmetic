@@ -121,11 +121,21 @@
 								</div>
 								<div class="form-group" id="selling_dist">
 									<label>Harga Jual Distributor</label>
-									<input type="number" name="selling_dist" value="<?=intval($data["price_dist"])?>" class="form-control form-control-sm">
+									<div class="input-group input-group-merge">
+										<div class="input-group-prepend">
+											<span class="input-group-text"><small class="font-weight-bold">Rp. </small></span>
+										</div>
+										<input type="number" name="selling_dist" value="<?= intval($data["price_dist"]) ?>" class="form-control form-control-sm">
+									</div>
 								</div>
 								<div class="form-group" id="base_price">
 									<label>Harga Modal</label>
-									<input type="number" name="base_price" value="<?=intval($data["base_price"])?>" class="form-control form-control-sm">
+									<div class="input-group input-group-merge">
+										<div class="input-group-prepend">
+											<span class="input-group-text"><small class="font-weight-bold">Rp. </small></span>
+										</div>
+										<input type="number" name="base_price" value="<?= intval($data["base_price"]) ?>" class="form-control form-control-sm">
+									</div>
 								</div>
 								<div>
 									<div class="form-group row pb-0">
