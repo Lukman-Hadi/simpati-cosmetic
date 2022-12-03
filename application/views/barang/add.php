@@ -122,7 +122,7 @@
 									<label>Harga Jual Distributor</label>
 									<input type="number" name="selling_dist" class="form-control form-control-sm">
 								</div>
-								<div class="form-group" id="selling_dist">
+								<div class="form-group" id="base_price">
 									<label>Harga Modal</label>
 									<input type="number" name="base_price" class="form-control form-control-sm">
 								</div>
