@@ -120,11 +120,21 @@
 								</div>
 								<div class="form-group" id="selling_dist">
 									<label>Harga Jual Distributor</label>
-									<input type="number" name="selling_dist" class="form-control form-control-sm">
+									<div class="input-group input-group-merge">
+										<div class="input-group-prepend">
+											<span class="input-group-text"><small class="font-weight-bold">Rp. </small></span>
+										</div>
+										<input type="text" name="selling_dist" class="form-control form-control-sm">
+									</div>
 								</div>
 								<div class="form-group" id="base_price">
 									<label>Harga Modal</label>
-									<input type="number" name="base_price" class="form-control form-control-sm">
+									<div class="input-group input-group-merge">
+										<div class="input-group-prepend">
+											<span class="input-group-text"><small class="font-weight-bold">Rp. </small></span>
+										</div>
+										<input type="text" name="base_price" class="form-control form-control-sm">
+									</div>
 								</div>
 								<div>
 									<div class="form-group row pb-0">
@@ -264,7 +274,17 @@
 			// minimumInputLength: 2,
 		})
 		refreshSelect2();
+		setupInput();
 	});
+
+	function setupInput() {
+		selllingDist.mask('000.000.000.000.000', {
+			reverse: true
+		});
+		basePrice.mask('000.000.000.000.000', {
+			reverse: true
+		});
+	}
 	$(document).on("keydown", ":input:not(textarea):not(:submit):not(#variant input)", function(event) {
 		if (event.key == "Enter") {
 			event.preventDefault();
@@ -408,8 +428,8 @@
 		if (this.value === 'margin') {
 			$('#sellingMethodPrice').css('text-decoration', 'line-through');
 			$('#sellingMethodMargin').css('text-decoration', '');
-			$('.input-group-prepend').remove();
-			$(`${marginHtml}`).appendTo($('.input-group-merge'));
+			$('#selling_method_value .input-group-prepend').remove();
+			$(`${marginHtml}`).appendTo($('#selling_method_value .input-group-merge'));
 			sellingValue.mask('000', {
 				reverse: true
 			});
@@ -417,7 +437,7 @@
 			$('#sellingMethodMargin').css('text-decoration', 'line-through');
 			$('#sellingMethodPrice').css('text-decoration', '');
 			$('.input-group-append').remove();
-			$(`${priceHtml}`).prependTo($('.input-group-merge'));
+			$(`${priceHtml}`).prependTo($('#selling_method_value .input-group-merge'));
 			sellingValue.mask('000.000.000.000.000', {
 				reverse: true
 			});
@@ -486,5 +506,4 @@
 		let comp = $("input[name='password'],input[name='password_confirmation']");
 		comp.attr('type') == 'password' ? comp.attr('type', 'text') : comp.attr('type', 'password')
 	}
-	
 </script>
