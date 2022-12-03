@@ -229,6 +229,8 @@
 	const packingChildListSelectUrl = <?= json_encode(base_url('master/getBrandListSelect')) ?>;
 	const sellingMethod = $('input[name=selling_method]');
 	const sellingValue = $('input[name=selling_method_value]');
+	const selllingDist = $('input[name=selling_dist]');
+	const basePrice = $('input[name=base_price]');
 	const form = $('#form');
 	$(document).ready(function() {
 		$.fn.select2.defaults.set("theme", "bootstrap");
@@ -484,41 +486,5 @@
 		let comp = $("input[name='password'],input[name='password_confirmation']");
 		comp.attr('type') == 'password' ? comp.attr('type', 'text') : comp.attr('type', 'password')
 	}
-
-	/*
-	function editForm(id) {
-		showLoaderScreen();
-		$.ajax({
-			url: `${urlGetSingleUser}?id=${id}`,
-			type: 'get',
-			dataType: 'json',
-			success: function(res) {
-				if (res.status) {
-					newForm(true);
-					data = res.data;
-					for (let [key, val] of Object.entries(data)) {
-						$(`input[name=${key}]`).val(val);
-					}
-					data.role.forEach(role => {
-						$(`#cbRole${role}`).prop('checked', true);
-					});
-					$(`input[name="username"]`).prop('readonly', true);
-					$('#ff').append(`<input type="hidden" name="id" value="${data.id}" id="id_form">`)
-					if (data.role.includes(baKey)) {
-						$(`#brandDiv`).html(elBrandDiv);
-						fetchList(urlGetBrandList, 'brand_id[]', 'cbBrand', 'brand', data.brand);
-					}
-				} else {
-					Toast.fire({
-						type: "error",
-						title: "" + result.message + ".",
-					});
-				}
-			},
-			complete: function() {
-				hideLoaderScreen();
-			}
-		})
-	}
-	*/
+	
 </script>
