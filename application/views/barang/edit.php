@@ -125,7 +125,7 @@
 										<div class="input-group-prepend">
 											<span class="input-group-text"><small class="font-weight-bold">Rp. </small></span>
 										</div>
-										<input type="number" name="selling_dist" value="<?= intval($data["price_dist"]) ?>" class="form-control form-control-sm">
+										<input type="text" name="selling_dist" value="<?= intval($data["price_dist"]) ?>" class="form-control form-control-sm">
 									</div>
 								</div>
 								<div class="form-group" id="base_price">
@@ -134,7 +134,7 @@
 										<div class="input-group-prepend">
 											<span class="input-group-text"><small class="font-weight-bold">Rp. </small></span>
 										</div>
-										<input type="number" name="base_price" value="<?= intval($data["base_price"]) ?>" class="form-control form-control-sm">
+										<input type="text" name="base_price" value="<?= intval($data["base_price"]) ?>" class="form-control form-control-sm">
 									</div>
 								</div>
 								<div>
@@ -245,11 +245,14 @@
 	const packingChildListSelectUrl = <?= json_encode(base_url('master/getBrandListSelect')) ?>;
 	const sellingMethod = $('input[name=selling_method]');
 	const sellingValue = $('input[name=selling_method_value]');
+	const sellingDist = $('input[name=selling_dist]');
+	const basePrice = $('input[name=base_price]');
 	const form = $('#form');
 	const variantArray = <?php echo json_encode($data["variant"]); ?>;
 	$(document).ready(function() {
 		$.fn.select2.defaults.set("theme", "bootstrap");
 		hideLoaderScreen();
+		setupInput();
 		initEdit();
 		selectBrand.select2({
 			ajax: {
@@ -281,6 +284,15 @@
 		})
 		refreshSelect2();
 	});
+	function setupInput() {
+		sellingDist.mask('000.000.000.000.000', {
+			reverse: true
+		});
+		basePrice.mask('000.000.000.000.000', {
+			reverse: true
+		});
+	}
+	
 	$(document).on("keydown", ":input:not(textarea):not(:submit):not(#variant input)", function(event) {
 		if (event.key == "Enter") {
 			event.preventDefault();
@@ -426,8 +438,8 @@
 		if (this.value === 'margin') {
 			$('#sellingMethodPrice').css('text-decoration', 'line-through');
 			$('#sellingMethodMargin').css('text-decoration', '');
-			$('.input-group-prepend').remove();
-			$(`${marginHtml}`).appendTo($('.input-group-merge'));
+			$('#selling_method_value .input-group-prepend').remove();
+			$(`${marginHtml}`).appendTo($('#selling_method_value .input-group-merge'));
 			sellingValue.mask('000', {
 				reverse: true
 			});
@@ -435,7 +447,7 @@
 			$('#sellingMethodMargin').css('text-decoration', 'line-through');
 			$('#sellingMethodPrice').css('text-decoration', '');
 			$('.input-group-append').remove();
-			$(`${priceHtml}`).prependTo($('.input-group-merge'));
+			$(`${priceHtml}`).prependTo($('#selling_method_value .input-group-merge'));
 			sellingValue.mask('000.000.000.000.000', {
 				reverse: true
 			});
@@ -467,8 +479,8 @@
 		if (this.value === 'margin') {
 			$('#sellingMethodPrice').css('text-decoration', 'line-through');
 			$('#sellingMethodMargin').css('text-decoration', '');
-			$('.input-group-prepend').remove();
-			$(`${marginHtml}`).appendTo($('.input-group-merge'));
+			$('#selling_method_value .input-group-prepend').remove();
+			$(`${marginHtml}`).appendTo($('#selling_method_value .input-group-merge'));
 			sellingValue.mask('000', {
 				reverse: true
 			});
@@ -476,7 +488,7 @@
 			$('#sellingMethodMargin').css('text-decoration', 'line-through');
 			$('#sellingMethodPrice').css('text-decoration', '');
 			$('.input-group-append').remove();
-			$(`${priceHtml}`).prependTo($('.input-group-merge'));
+			$(`${priceHtml}`).prependTo($('#selling_method_value .input-group-merge'));
 			sellingValue.mask('000.000.000.000.000', {
 				reverse: true
 			});
