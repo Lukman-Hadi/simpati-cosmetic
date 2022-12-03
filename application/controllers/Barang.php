@@ -348,6 +348,8 @@ class Barang extends CI_Controller
 		}
 
 		$sellMethodValue = str_replace([",", "."], "", $sellMethodValue);
+		$sellingDist = str_replace([",", "."], "", $sellingDist);
+		$basePrice = str_replace([",", "."], "", $basePrice);
 		if ($sellMethod == "margin") {
 			$sellMethodValue = ["margin" => $sellMethodValue,"price_dist"=>$sellingDist,"base_price"=>$basePrice];
 		} else {
