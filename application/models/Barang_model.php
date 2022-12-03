@@ -235,7 +235,8 @@ class Barang_model extends MY_model
 						join mst_packing mp
 							on mp.id = ppu.packing_id
 						where ppu.product_id =p.id
-						order by ppu.sort_order asc) as packing_units")
+						order by ppu.sort_order asc) as packing_units,
+						CAST(P.BASE_PRICE AS DECIMAL) AS base_price")
 			->from($this->variantTable)
 			->join($this->table, "p.ID = pv.PRODUCT_ID and p.is_active = 1 and p.is_deleted = 0");
 		$this->db->where('pv.IS_DELETED', 0)

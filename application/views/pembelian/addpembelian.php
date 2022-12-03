@@ -231,7 +231,7 @@
 									<div class="input-group-prepend">
 										<span class="input-group-text"><small class="font-weight-bold">Rp. </small></span>
 									</div>
-									<input type="text" name="buy_price[]" class="form-control form-control-sm price">
+									<input type="text" name="buy_price[]" value="${data.base_price}" class="form-control form-control-sm price">
 								</div>
 							</td>
 							<td id="expiry_input${idRow}"><input type="date" name="expiry_date[]" class="form-control form-control-sm"><input type="hidden" name="stockId[]"></td>

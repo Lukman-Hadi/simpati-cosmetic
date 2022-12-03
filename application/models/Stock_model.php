@@ -242,7 +242,8 @@ class Stock_model extends MY_model
 						CAST(CASE
 									WHEN P.PRICE IS NULL THEN (PS.BUY_PRICE + ((PS.BUY_PRICE * P.MARGIN)/ 100))
 									ELSE P.PRICE
-								END as DECIMAL) AS price")
+								END as DECIMAL) AS price,
+						CAST(P.PRICE_DIST AS DECIMAL) AS price_dist")
 			->from($this->variantTable)
 			->join($this->table, "p.ID = pv.PRODUCT_ID and p.is_active = 1 and p.is_deleted = 0")
 			->join($this->stockTable, "PS.PRODUCT_VARIANT_ID = PV.ID");
